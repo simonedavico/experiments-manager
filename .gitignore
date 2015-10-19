@@ -1,1 +1,12 @@
 /target/
+
+//Eclipse settings
+.settings
+.classpath
+api/.settings
+api/.classpath
+application/.settings
+application/.classpath
+
+//Custom files
+application/src/test/resources/configuration.properties

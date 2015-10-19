@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>cloud.benchflow</groupId>
+		<artifactId>experiments-manager</artifactId>
+		<version>0.0.1</version>
+	</parent>
+	<groupId>cloud.benchflow.experiments-manager</groupId>
+	<artifactId>application</artifactId>
+	<properties>
+		<jersey.multipart.version>2.19</jersey.multipart.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>io.dropwizard</groupId>
+			<artifactId>dropwizard-jersey</artifactId>
+			<version>${dropwizard.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>${jersey.multipart.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>cloud.benchflow.experiments-manager</groupId>
+			<artifactId>api</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.raml.plugins</groupId>
+				<artifactId>jaxrs-raml-maven-plugin</artifactId>
+				<version>1.3.3</version>
+				<configuration>
+					<title>#See: benchflow-compose.raml</title>
+					<baseUrl>#See: benchflow-compose.raml</baseUrl>
+					<vesion>#See: benchflow-compose.raml</vesion>
+					<sourcePaths>
+						<param>${basedir}/src/main/java/</param>
+					</sourcePaths>
+					<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+					<outputFile>${basedir}/raml/benchflow-compose-resources.raml</outputFile>
+					<removeOldOutput>false</removeOldOutput>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate-raml</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
