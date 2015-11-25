@@ -1,4 +1,8 @@
 #Dropwizard
+
+template: Hello, %s!
+defaultName: Stranger
+
 server:
   type: default
   applicationConnectors:
