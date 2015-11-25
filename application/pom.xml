@@ -17,10 +17,16 @@
 			<artifactId>dropwizard-jersey</artifactId>
 			<version>${dropwizard.version}</version>
 		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.glassfish.jersey.media</groupId>-->
+			<!--<artifactId>jersey-media-multipart</artifactId>-->
+			<!--<version>${jersey.multipart.version}</version>-->
+		<!--</dependency>-->
 		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-multipart</artifactId>
-			<version>${jersey.multipart.version}</version>
+			<groupId>io.dropwizard</groupId>
+			<artifactId>dropwizard-forms</artifactId>
+			<version>${dropwizard.version}</version>
+			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>cloud.benchflow.experiments-manager</groupId>

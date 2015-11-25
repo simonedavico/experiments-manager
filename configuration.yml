@@ -18,6 +18,7 @@ logging:
   level: INFO
   loggers:
     io.dropwizard: INFO
+    DeployBenchmarkResourceLogger: DEBUG
   appenders:
     - type: console
       threshold: ALL
