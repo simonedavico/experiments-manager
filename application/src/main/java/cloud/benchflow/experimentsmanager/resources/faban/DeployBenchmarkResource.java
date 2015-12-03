@@ -30,6 +30,7 @@ import java.util.zip.ZipFile;
  *
  * Created on 25/11/15.
  */
+
 @Path("/faban/deploy")
 public class DeployBenchmarkResource {
 
@@ -46,10 +47,9 @@ public class DeployBenchmarkResource {
     }
 
     @POST
-    @Path("/{name}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public DeployStatusResponse deployBenchmark(@PathParam("name") String name,
+    public DeployStatusResponse deployBenchmark(//@PathParam("name") String name,
                                                 @FormDataParam("file") InputStream benchmarkInputStream,
                                                 @FormDataParam("file") FormDataContentDisposition benchmarkDetail) {
 
@@ -57,23 +57,25 @@ public class DeployBenchmarkResource {
         //logger.debug(name);
         //logger.debug(benchmarkDetail.getFileName());
 
-        String simpleZipName = benchmarkDetail.getFileName();
-        if(simpleZipName.contains("."))
-            simpleZipName = simpleZipName.substring(0, simpleZipName.lastIndexOf('.'));
+        final String fileName = benchmarkDetail.getFileName();
 
         //TODO: check proper structure of benchmark
+        //extension included
         //if structure is not ok, return a NonCompliantBenchmarkException
+        //here I can assume I have the correct zip file
 
-        java.nio.file.Path path = Paths.get(TMP_BENCHMARK_LOCATION + name + ".zip");
+        final String simpleName = fileName.substring(0, fileName.lastIndexOf('.'));
+
+        java.nio.file.Path path = Paths.get(TMP_BENCHMARK_LOCATION + fileName);
         try (TemporaryFileHandler tmp = new TemporaryFileHandler(benchmarkInputStream, path)) {
 
             ZipFile benchmark = new ZipFile(tmp.getFile());
-            ZipEntry entry = benchmark.getEntry(simpleZipName + "/drivers/" + name + ".jar");
+            ZipEntry entry = benchmark.getEntry(simpleName + "/drivers/" + simpleName + ".jar");
 
             if(entry == null) throw new NoDriversException("The drivers folder in the archive attached to the request " +
                                                            "does not contain any driver in JAR format.");
 
-            java.nio.file.Path driverPath = Paths.get("./tmp/drivers/" + name + ".jar");
+            java.nio.file.Path driverPath = Paths.get("./tmp/drivers/" + simpleName + ".jar");
 
             try(TemporaryFileHandler tmpDriver = new TemporaryFileHandler(benchmark.getInputStream(entry), driverPath)) {
 
@@ -83,7 +85,7 @@ public class DeployBenchmarkResource {
                 if(response.getCode() == DeployStatus.Code.CREATED) {
 
                     MinioHandler mh = new MinioHandler(address, accessKey, secretKey);
-                    mh.storeBenchmark(name + ".jar", Files.readAllBytes(driverPath));
+                    mh.storeBenchmark(simpleName + ".jar", Files.readAllBytes(driverPath));
 
                 }
 

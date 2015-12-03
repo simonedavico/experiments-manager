@@ -1,8 +1,5 @@
 #Dropwizard
 
-template: Hello, %s!
-defaultName: Stranger
-
 minio:
   accessKey: 64NGRC6UJ9YNQR7CZQRX
   secretKey: nkqPS+HF1GrdI/RBd4LtvLmdMav2Pfpfo+FuCJor
