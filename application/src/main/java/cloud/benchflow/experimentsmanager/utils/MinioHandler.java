@@ -11,6 +11,8 @@ import java.net.MalformedURLException;
  * @author Simone D'Avico (simonedavico@gmail.com)
  *
  * Created on 03/12/15.
+ *
+ * TODO: should we expand this to a more high level library?
  */
 public class MinioHandler {
 

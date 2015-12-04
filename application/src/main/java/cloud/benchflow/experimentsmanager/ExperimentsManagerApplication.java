@@ -15,7 +15,7 @@ public class ExperimentsManagerApplication extends Application<ExperimentsManage
 
     @Override
     public String getName() {
-        return "hello-world";
+        return "experiments-manager";
     }
 
     @Override

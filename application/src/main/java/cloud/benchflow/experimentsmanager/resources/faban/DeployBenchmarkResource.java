@@ -2,7 +2,7 @@ package cloud.benchflow.experimentsmanager.resources.faban;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
-import cloud.benchflow.experimentsmanager.responses.DeployStatusResponse;
+import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 import cloud.benchflow.experimentsmanager.utils.TemporaryFileHandler;
 import cloud.benchflow.faban.client.FabanClient;
@@ -35,6 +35,7 @@ import java.util.zip.ZipFile;
 public class DeployBenchmarkResource {
 
     private static final String TMP_BENCHMARK_LOCATION = "./tmp/benchmarks/";
+    private static final String TMP_DRIVERS_LOCATION = "./tmp/drivers/";
 
     private String address;
     private String accessKey;
@@ -75,7 +76,7 @@ public class DeployBenchmarkResource {
             if(entry == null) throw new NoDriversException("The drivers folder in the archive attached to the request " +
                                                            "does not contain any driver in JAR format.");
 
-            java.nio.file.Path driverPath = Paths.get("./tmp/drivers/" + simpleName + ".jar");
+            java.nio.file.Path driverPath = Paths.get(TMP_DRIVERS_LOCATION + simpleName + ".jar");
 
             try(TemporaryFileHandler tmpDriver = new TemporaryFileHandler(benchmark.getInputStream(entry), driverPath)) {
 
