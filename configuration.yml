@@ -1,4 +1,10 @@
 #Dropwizard
+
+minio:
+  accessKey: 64NGRC6UJ9YNQR7CZQRX
+  secretKey: nkqPS+HF1GrdI/RBd4LtvLmdMav2Pfpfo+FuCJor
+  address: http://192.168.99.100:9000/
+
 server:
   type: default
   applicationConnectors:
@@ -14,6 +20,7 @@ logging:
   level: INFO
   loggers:
     io.dropwizard: INFO
+    DeployBenchmarkResourceLogger: DEBUG
   appenders:
     - type: console
       threshold: ALL
