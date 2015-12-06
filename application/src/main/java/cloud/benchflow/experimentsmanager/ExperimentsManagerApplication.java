@@ -1,6 +1,7 @@
 package cloud.benchflow.experimentsmanager;
 
 import cloud.benchflow.experimentsmanager.resources.faban.DeployBenchmarkResource;
+import cloud.benchflow.experimentsmanager.resources.faban.StatusBenchmarkResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -34,10 +35,11 @@ public class ExperimentsManagerApplication extends Application<ExperimentsManage
                         configuration.getMinioConfiguration().getAddress()
                 );
     	
-
+        final StatusBenchmarkResource sb = new StatusBenchmarkResource();
 
         environment.jersey().register(MultiPartFeature.class);
         environment.jersey().register(db);
+        environment.jersey().register(sb);
     }
 
 }
