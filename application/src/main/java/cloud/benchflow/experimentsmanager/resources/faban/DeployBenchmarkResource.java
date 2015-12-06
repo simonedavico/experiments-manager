@@ -1,11 +1,13 @@
 package cloud.benchflow.experimentsmanager.resources.faban;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
+import cloud.benchflow.experimentsmanager.exceptions.FabanException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
 import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 import cloud.benchflow.experimentsmanager.utils.TemporaryFileHandler;
 import cloud.benchflow.faban.client.FabanClient;
+import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.exceptions.JarFileNotFoundException;
 import cloud.benchflow.faban.client.responses.DeployStatus;
 import io.minio.errors.ClientException;
@@ -61,7 +63,6 @@ public class DeployBenchmarkResource {
         final String fileName = benchmarkDetail.getFileName();
 
         //TODO: check proper structure of benchmark
-        //extension included
         //if structure is not ok, return a NonCompliantBenchmarkException
         //here I can assume I have the correct zip file
 
@@ -71,14 +72,21 @@ public class DeployBenchmarkResource {
         try (TemporaryFileHandler tmp = new TemporaryFileHandler(benchmarkInputStream, path)) {
 
             ZipFile benchmark = new ZipFile(tmp.getFile());
-            ZipEntry entry = benchmark.getEntry(simpleName + "/drivers/" + simpleName + ".jar");
+            ZipEntry driverEntry = benchmark.getEntry(simpleName + "/drivers/" + simpleName + ".jar");
+            //TODO: this will disappear when we will generate the configuration
+            ZipEntry configEntry = benchmark.getEntry(simpleName + "/run.xml");
 
-            if(entry == null) throw new NoDriversException("The drivers folder in the archive attached to the request " +
+            if(driverEntry == null) throw new NoDriversException("The drivers folder in the archive attached to the request " +
                                                            "does not contain any driver in JAR format.");
 
             java.nio.file.Path driverPath = Paths.get(TMP_DRIVERS_LOCATION + simpleName + ".jar");
+            java.nio.file.Path configPath = Paths.get(TMP_DRIVERS_LOCATION + simpleName + ".run.xml");
 
-            try(TemporaryFileHandler tmpDriver = new TemporaryFileHandler(benchmark.getInputStream(entry), driverPath)) {
+            //TODO: get .yml config, generate XML, store it in Minio
+            //For now I will just include the run.xml passed inside the .zip
+            //Anyway, I can assume I have a run.xml here
+            try(TemporaryFileHandler tmpDriver = new TemporaryFileHandler(benchmark.getInputStream(driverEntry), driverPath);
+                TemporaryFileHandler tmpConfig = new TemporaryFileHandler(benchmark.getInputStream(configEntry), configPath)) {
 
                 FabanClient fc = new FabanClient();
                 DeployStatus response = fc.deploy(tmpDriver.getFile());
@@ -87,7 +95,7 @@ public class DeployBenchmarkResource {
 
                     MinioHandler mh = new MinioHandler(address, accessKey, secretKey);
                     mh.storeBenchmark(simpleName + ".jar", Files.readAllBytes(driverPath));
-
+                    mh.storeBenchmark(simpleName + ".run.xml", Files.readAllBytes(configPath));
                 }
 
                 return new DeployStatusResponse(response.getCode().toString());
@@ -95,6 +103,8 @@ public class DeployBenchmarkResource {
 
         } catch (IOException | JarFileNotFoundException | ClientException  e) {
             throw new BenchmarkDeployException("An unknown error occurred while processing your request.", e);
+        } catch (FabanClientException e) {
+            throw new FabanException(e);
         }
 
     }
