@@ -1,8 +1,8 @@
 #Dropwizard
 
 minio:
-  accessKey: 64NGRC6UJ9YNQR7CZQRX
-  secretKey: nkqPS+HF1GrdI/RBd4LtvLmdMav2Pfpfo+FuCJor
+  accessKey: N0CBZE8QPMBEL5T517EJ
+  secretKey: rxOX6CkANrwPio4qLFYBUo0mCTQzT7A8JKpyzxNi
   address: http://192.168.99.100:9000/
 
 server:

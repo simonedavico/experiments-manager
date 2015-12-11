@@ -23,16 +23,18 @@ public class MinioHandler {
         mc = new MinioClient(address, accessKey, secretKey);
     }
 
+    private void storeObject(String id, byte[] object) throws IOException, ClientException {
+        mc.putObject(benchmarkBucket, id,
+                ContentType.APPLICATION_OCTET_STREAM.toString(),
+                object.length, new ByteArrayInputStream(object));
+    }
+
     public void storeBenchmark(String benchmarkID, byte[] benchmark) throws IOException, ClientException {
+        storeObject(benchmarkID + "/benchmark.zip", benchmark);
+    }
 
-        //String bucket = benchmarkBucket.replace("x", benchmarkID);
-
-        //mc.makeBucket(bucket);
-
-        //TODO: check that the size is specified in the right way
-        mc.putObject(benchmarkBucket, benchmarkID,
-                     ContentType.APPLICATION_OCTET_STREAM.toString(),
-                     benchmark.length, new ByteArrayInputStream(benchmark));
+    public void storeConfig(String benchmarkID, byte[] config) throws IOException, ClientException {
+        storeObject(benchmarkID + "/benchflow-benchmark.yml", config);
     }
 
 

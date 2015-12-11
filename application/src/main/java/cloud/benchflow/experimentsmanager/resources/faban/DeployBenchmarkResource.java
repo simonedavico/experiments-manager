@@ -1,15 +1,16 @@
 package cloud.benchflow.experimentsmanager.resources.faban;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
-import cloud.benchflow.experimentsmanager.exceptions.FabanException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
+import cloud.benchflow.experimentsmanager.exceptions.UndeployableDriverException;
 import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
-import cloud.benchflow.experimentsmanager.utils.TemporaryFileHandler;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
-import cloud.benchflow.faban.client.exceptions.JarFileNotFoundException;
 import cloud.benchflow.faban.client.responses.DeployStatus;
+
+import com.google.common.base.Predicate;
+import com.google.common.io.ByteStreams;
 import io.minio.errors.ClientException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -19,12 +20,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.Path;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -36,77 +41,73 @@ import java.util.zip.ZipFile;
 @Path("/faban/deploy")
 public class DeployBenchmarkResource {
 
-    private static final String TMP_BENCHMARK_LOCATION = "./tmp/benchmarks/";
-    private static final String TMP_DRIVERS_LOCATION = "./tmp/drivers/";
+    private final MinioHandler mh;
 
-    private String address;
-    private String accessKey;
-    private String secretKey;
-
-    public DeployBenchmarkResource(String accessKey, String secretKey, String address) {
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.address = address;
+    public DeployBenchmarkResource(MinioHandler mh) {
+        this.mh = mh;
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public DeployStatusResponse deployBenchmark(//@PathParam("name") String name,
-                                                @FormDataParam("file") InputStream benchmarkInputStream,
-                                                @FormDataParam("file") FormDataContentDisposition benchmarkDetail) {
+    public DeployStatusResponse deployBenchmark(@FormDataParam("file") InputStream benchmarkInputStream,
+                                                @FormDataParam("file") FormDataContentDisposition benchmarkDetail) throws IOException {
 
-        Logger logger = LoggerFactory.getLogger("DeployBenchmarkResourceLogger");
-        //logger.debug(name);
+        //Logger logger = LoggerFactory.getLogger("DeployBenchmarkResourceLogger");
         //logger.debug(benchmarkDetail.getFileName());
+        //logger.debug(name);
 
-        final String fileName = benchmarkDetail.getFileName();
+        byte[] cachedBenchmark = ByteStreams.toByteArray(benchmarkInputStream);
+        byte[] cachedConfiguration = null;
 
-        //TODO: check proper structure of benchmark
-        //if structure is not ok, return a NonCompliantBenchmarkException
-        //here I can assume I have the correct zip file
+        InputStream in = new ByteArrayInputStream(cachedBenchmark);
+        ZipEntry entry;
 
-        final String simpleName = fileName.substring(0, fileName.lastIndexOf('.'));
+        //OS X archive utility adds junk when compressing
+        Predicate<ZipEntry> isDriver = e ->  e.getName().endsWith(".jar") &&
+                                            !e.getName().contains("__MACOSX");
 
-        java.nio.file.Path path = Paths.get(TMP_BENCHMARK_LOCATION + fileName);
-        try (TemporaryFileHandler tmp = new TemporaryFileHandler(benchmarkInputStream, path)) {
+        Predicate<ZipEntry> isConfigFile = e -> e.getName().equals("benchflow-benchmark.yml");
 
-            ZipFile benchmark = new ZipFile(tmp.getFile());
-            ZipEntry driverEntry = benchmark.getEntry(simpleName + "/drivers/" + simpleName + ".jar");
-            //TODO: this will disappear when we will generate the configuration
-            ZipEntry configEntry = benchmark.getEntry(simpleName + "/run.xml");
+        int driversCount = 0;
+        FabanClient fc = new FabanClient();
 
-            if(driverEntry == null) throw new NoDriversException("The drivers folder in the archive attached to the request " +
-                                                           "does not contain any driver in JAR format.");
+        try(ZipInputStream zin = new ZipInputStream(in)) {
+            while((entry = zin.getNextEntry()) != null) {
+                if(isDriver.apply(entry)) {
+                    driversCount++;
+                    String driverName = entry.getName()
+                                             .substring(entry.getName().lastIndexOf("/"));
 
-            java.nio.file.Path driverPath = Paths.get(TMP_DRIVERS_LOCATION + simpleName + ".jar");
-            java.nio.file.Path configPath = Paths.get(TMP_DRIVERS_LOCATION + simpleName + ".run.xml");
+                    DeployStatus status = fc.deploy(zin, driverName);
 
-            //TODO: get .yml config, generate XML, store it in Minio
-            //For now I will just include the run.xml passed inside the .zip
-            //Anyway, I can assume I have a run.xml here
-            try(TemporaryFileHandler tmpDriver = new TemporaryFileHandler(benchmark.getInputStream(driverEntry), driverPath);
-                TemporaryFileHandler tmpConfig = new TemporaryFileHandler(benchmark.getInputStream(configEntry), configPath)) {
+                    if(status.getCode() != DeployStatus.Code.CREATED) {
+                        throw new UndeployableDriverException("The driver " + driverName + " couldn't be deployed. Faban reported" +
+                                " a status of " + status.getCode().toString() );
+                    }
 
-                FabanClient fc = new FabanClient();
-                DeployStatus response = fc.deploy(tmpDriver.getFile());
-
-                if(response.getCode() == DeployStatus.Code.CREATED) {
-
-                    MinioHandler mh = new MinioHandler(address, accessKey, secretKey);
-                    mh.storeBenchmark(simpleName + ".jar", Files.readAllBytes(driverPath));
-                    mh.storeBenchmark(simpleName + ".run.xml", Files.readAllBytes(configPath));
+                } else if(isConfigFile.apply(entry)) {
+                    //cache the config file to store it on minio
+                    cachedConfiguration = ByteStreams.toByteArray(zin);
                 }
-
-                return new DeployStatusResponse(response.getCode().toString());
             }
 
-        } catch (IOException | JarFileNotFoundException | ClientException  e) {
-            throw new BenchmarkDeployException("An unknown error occurred while processing your request.", e);
-        } catch (FabanClientException e) {
-            throw new FabanException(e);
-        }
+            if(driversCount == 0) throw new NoDriversException();
+            mh.storeBenchmark(benchmarkDetail.getName(), cachedBenchmark);
 
+            //TODO: can this happen? or we generate a default configuration on the fly?
+            if(cachedConfiguration != null)  {
+                mh.storeConfig(benchmarkDetail.getName(), cachedConfiguration);
+            }
+
+            return new DeployStatusResponse("Deployed");
+
+            //Questions still to answer:
+            //1. what should happen if there are multiple drivers to deploy, but one of them returns error?
+
+        } catch (FabanClientException | IOException | ClientException e) {
+            throw new BenchmarkDeployException("An unknown error occurred while processing your request.", e);
+        }
     }
 
 }
