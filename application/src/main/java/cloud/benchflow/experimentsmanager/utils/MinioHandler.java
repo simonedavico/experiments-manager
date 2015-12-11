@@ -37,5 +37,9 @@ public class MinioHandler {
         storeObject(benchmarkID + "/benchflow-benchmark.yml", config);
     }
 
+    public InputStream getConfig(String benchmarkId) throws IOException, ClientException {
+        return mc.getObject(benchmarkBucket, benchmarkId + "/benchflow-benchmark.yml");
+    }
+
 
 }
