@@ -1,0 +1,26 @@
+#%RAML 0.8
+title: "#See: benchflow-compose.raml"
+version: "#See: benchflow-compose.raml"
+baseUri: "#See: benchflow-compose.raml"
+/faban/deploy: 
+  post: 
+    body: 
+      multipart/form-data: 
+    responses: 
+      200: 
+        body: 
+          application/json: 
+/faban/run/{benchmarkId}: 
+  post: 
+    body: 
+      multipart/form-data: 
+    responses: 
+      200: 
+        body: 
+          application/json: 
+/faban/status/{runId}: 
+  get: 
+    responses: 
+      200: 
+        body: 
+          application/json: 

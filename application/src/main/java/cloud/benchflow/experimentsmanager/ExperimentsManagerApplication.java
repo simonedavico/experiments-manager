@@ -10,7 +10,8 @@ import io.dropwizard.setup.Environment;
 
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
 import io.minio.errors.ClientException;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;;import java.net.MalformedURLException;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import java.net.MalformedURLException;
 
 public class ExperimentsManagerApplication extends Application<ExperimentsManagerConfiguration> {
     public static void main(String[] args) throws Exception {
