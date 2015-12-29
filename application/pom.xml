@@ -81,7 +81,7 @@
 						<goals>
 							<goal>generate-raml</goal>
 						</goals>
-						<phase>package</phase>
+						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>

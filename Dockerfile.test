@@ -1,0 +1,13 @@
+FROM benchflow/base-images:envconsul-java8_dev
+
+MAINTAINER Vincenzo FERME <info@vincenzoferme.it>
+
+COPY configuration.yml /app/
+
+COPY ./target/benchflow-experiments-manager.jar /app/
+COPY ./services/300-experiments-manager.conf /apps/chaperone.d/300-experiments-manager.conf
+
+#TODO: remove, it is for testing
+RUN touch /app/test.tpl
+ 
+EXPOSE 8080
