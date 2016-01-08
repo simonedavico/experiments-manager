@@ -29,7 +29,10 @@ build_container_local:
 	rm target/benchflow-$(REPONAME).jar
 
 test_container_local:
-	#TODO
+	docker run -ti --rm -e "MINIO_ADDRESS=http://195.176.181.55:9000" -e "MINIO_SECRET_KEY=CYNQML6R7V12MTT32W6P" \
+	-e "MINIO_ACCESS_KEY=SQ96V5pg02Z3kZ/0ViF9YY6GwWzZvoBmElpzEEjn" -e "ENVCONSUL_CONSUL=195.176.181.55:8500" \
+	-e "FABAN_ADDRESS=195.176.181.55:9980" \
+	-p 8080:8080 --net="host" --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
 
 rm_container_local:
-	#TODO
+	docker rm -f -v $(REPONAME)

@@ -1,20 +1,25 @@
 #Dropwizard
 
 minio:
-  accessKey: N0CBZE8QPMBEL5T517EJ
-  secretKey: rxOX6CkANrwPio4qLFYBUo0mCTQzT7A8JKpyzxNi
-  address: http://192.168.99.100:9000/
+  accessKey: ${env.MINIO_ACCESS_KEY}
+  secretKey: ${env.MINIO_SECRET_KEY}
+  address: ${env.MINIO_ADDRESS}
+ 
+faban:
+  user: ${env.FABAN_USER!""}
+  password: ${env.FABAN_PASSWORD!""}
+  address: ${env.FABAN_ADDRESS}
 
 server:
   type: default
   applicationConnectors:
     - type: http
       port: 8080
-      bindHost: 127.0.0.1 # only bind to loopback
+      #bindHost: 127.0.0.1 # only bind to loopback
   adminConnectors:
     - type: http
       port: 8081
-      bindHost: 127.0.0.1 # only bind to loopback
+      #bindHost: 127.0.0.1 # only bind to loopback
      
 logging:
   level: INFO
