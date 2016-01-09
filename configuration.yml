@@ -1,9 +1,12 @@
 #Dropwizard
 
 minio:
-  accessKey: N0CBZE8QPMBEL5T517EJ
-  secretKey: rxOX6CkANrwPio4qLFYBUo0mCTQzT7A8JKpyzxNi
-  address: http://192.168.99.100:9000/
+  accessKey: CYNQML6R7V12MTT32W6P
+  secretKey: SQ96V5pg02Z3kZ/0ViF9YY6GwWzZvoBmElpzEEjn
+  address: http://195.176.181.55:9000/
+
+drivers.maker:
+  address: http://localhost:6060
 
 server:
   type: default

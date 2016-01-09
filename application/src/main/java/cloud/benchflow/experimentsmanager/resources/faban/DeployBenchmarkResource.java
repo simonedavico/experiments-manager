@@ -67,24 +67,27 @@ public class DeployBenchmarkResource {
         Predicate<ZipEntry> isDriver = e ->  e.getName().endsWith(".jar") &&
                                             !e.getName().contains("__MACOSX");
 
-        Predicate<ZipEntry> isConfigFile = e -> e.getName().equals("benchflow-benchmark.yml");
+        Predicate<ZipEntry> isConfigFile = e -> e.getName().endsWith("benchflow-benchmark.yml");
 
         int driversCount = 0;
         FabanClient fc = new FabanClient();
 
         try(ZipInputStream zin = new ZipInputStream(in)) {
+            DeployStatus status = null;
             while((entry = zin.getNextEntry()) != null) {
                 if(isDriver.apply(entry)) {
                     driversCount++;
                     String driverName = entry.getName()
-                                             .substring(entry.getName().lastIndexOf("/"));
+                                             .substring(entry.getName().lastIndexOf("/")+1);
 
-                    DeployStatus status = fc.deploy(zin, driverName);
+                    status = fc.deploy(zin, driverName);
 
                     if(status.getCode() != DeployStatus.Code.CREATED) {
                         throw new UndeployableDriverException("The driver " + driverName + " couldn't be deployed. Faban reported" +
-                                " a status of " + status.getCode().toString() );
+                                " a status of " + status.getCode().toString());
                     }
+
+
 
                 } else if(isConfigFile.apply(entry)) {
                     //cache the config file to store it on minio
@@ -93,14 +96,15 @@ public class DeployBenchmarkResource {
             }
 
             if(driversCount == 0) throw new NoDriversException();
-            mh.storeBenchmark(benchmarkDetail.getName(), cachedBenchmark);
+            String benchmarkFileName = benchmarkDetail.getFileName().substring(0, benchmarkDetail.getFileName().lastIndexOf("."));
+            mh.storeBenchmark(benchmarkFileName, cachedBenchmark);
 
             //TODO: can this happen? or we generate a default configuration on the fly?
             if(cachedConfiguration != null)  {
-                mh.storeConfig(benchmarkDetail.getName(), cachedConfiguration);
+                mh.storeConfig(benchmarkFileName, cachedConfiguration);
             }
 
-            return new DeployStatusResponse("Deployed");
+            return new DeployStatusResponse(status.getCode().toString());
 
             //Questions still to answer:
             //1. what should happen if there are multiple drivers to deploy, but one of them returns error?

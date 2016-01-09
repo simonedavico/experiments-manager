@@ -2,7 +2,7 @@ package cloud.benchflow.experimentsmanager.configurations;
 
 import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.dropwizard.client.HttpClientConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -12,6 +12,19 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @Valid
     @NotNull
     private MinioConfiguration minioConfiguration = new MinioConfiguration();
+
+    @Valid
+    @NotNull
+    private DriversMakerConfiguration driversMakerConfiguration = new DriversMakerConfiguration();
+
+    @Valid
+    @NotNull
+    @JsonProperty
+    private HttpClientConfiguration httpClient = new HttpClientConfiguration();
+
+    public HttpClientConfiguration getHttpClientConfiguration() {
+        return httpClient;
+    }
 
     @JsonProperty("minio")
     public MinioConfiguration getMinioConfiguration() {
@@ -23,4 +36,13 @@ public class ExperimentsManagerConfiguration extends Configuration {
         this.minioConfiguration = mc;
     }
 
+    @JsonProperty("drivers.maker")
+    public DriversMakerConfiguration getDriversMakerConfiguration() {
+        return driversMakerConfiguration;
+    }
+
+    @JsonProperty("drivers.maker")
+    public void setDriversMakerConfiguration(DriversMakerConfiguration driversMakerConfiguration) {
+        this.driversMakerConfiguration = driversMakerConfiguration;
+    }
 }

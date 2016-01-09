@@ -41,5 +41,4 @@ public class MinioHandler {
         return mc.getObject(benchmarkBucket, benchmarkId + "/benchflow-benchmark.yml");
     }
 
-
 }
