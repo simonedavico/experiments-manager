@@ -12,6 +12,7 @@
 		<jersey.multipart.version>2.19</jersey.multipart.version>
         <minio.version>0.2.6</minio.version>
         <faban.client.version>0.1.0</faban.client.version>
+
 	</properties>
 	<dependencies>
 
@@ -39,12 +40,12 @@
 			<artifactId>api</artifactId>
 			<version>0.1.0</version>
 		</dependency>
-
+        
         <dependency>
-            <groupId>cloud.benchflow.faban</groupId>
-            <artifactId>client</artifactId>
-            <version>${faban.client.version}</version>
-        </dependency>
+		    <groupId>com.github.benchflow</groupId>
+		    <artifactId>faban-client</artifactId>
+		    <version>v-dev</version>
+		</dependency>
 
         <dependency>
             <groupId>io.minio</groupId>
@@ -53,6 +54,12 @@
         </dependency>
 
 	</dependencies>
+	<repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -75,7 +82,7 @@
 						<goals>
 							<goal>generate-raml</goal>
 						</goals>
-						<phase>package</phase>
+						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>

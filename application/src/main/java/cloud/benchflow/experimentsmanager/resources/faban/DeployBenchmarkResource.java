@@ -1,33 +1,38 @@
 package cloud.benchflow.experimentsmanager.resources.faban;
 
+import cloud.benchflow.experimentsmanager.configurations.FabanConfiguration;
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
+import cloud.benchflow.experimentsmanager.exceptions.BenchmarkRunException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
 import cloud.benchflow.experimentsmanager.exceptions.UndeployableDriverException;
 import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 import cloud.benchflow.faban.client.FabanClient;
+import cloud.benchflow.faban.client.configurations.FabanClientConfigImpl;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.responses.DeployStatus;
 
 import com.google.common.base.Predicate;
 import com.google.common.io.ByteStreams;
+import com.google.inject.name.Named;
+
 import io.minio.errors.ClientException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 
 import javax.ws.rs.*;
 import javax.ws.rs.Path;
-import javax.ws.rs.client.Client;
+
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
-import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -42,6 +47,8 @@ import java.util.zip.ZipInputStream;
 public class DeployBenchmarkResource {
 
     private final MinioHandler mh;
+    @Named("faban")
+    private FabanConfiguration fabanConf;
 
     public DeployBenchmarkResource(MinioHandler mh) {
         this.mh = mh;
@@ -70,7 +77,14 @@ public class DeployBenchmarkResource {
         Predicate<ZipEntry> isConfigFile = e -> e.getName().endsWith("benchflow-benchmark.yml");
 
         int driversCount = 0;
-        FabanClient fc = new FabanClient();
+        
+        FabanClientConfigImpl fabanConfig;
+		try {
+			fabanConfig = new FabanClientConfigImpl(fabanConf.getUser(), fabanConf.getPassword(), new URI(fabanConf.getAddress()));
+		} catch (URISyntaxException e1) {
+			throw new BenchmarkRunException();
+		}
+        FabanClient fc = new FabanClient().withConfig(fabanConfig);
 
         try(ZipInputStream zin = new ZipInputStream(in)) {
             DeployStatus status = null;

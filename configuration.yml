@@ -1,23 +1,27 @@
 #Dropwizard
-
 minio:
-  accessKey: CYNQML6R7V12MTT32W6P
-  secretKey: SQ96V5pg02Z3kZ/0ViF9YY6GwWzZvoBmElpzEEjn
-  address: http://195.176.181.55:9000/
+  accessKey: ${env.MINIO_ACCESS_KEY}
+  secretKey: ${env.MINIO_SECRET_KEY}
+  address: ${env.MINIO_ADDRESS}
 
 drivers.maker:
-  address: http://localhost:6060
+  address: ${env.DRIVERS_MAKER_ADDRESS}
+
+faban:
+  user: ${env.FABAN_USER!""}
+  password: ${env.FABAN_PASSWORD!""}
+  address: ${env.FABAN_ADDRESS}
 
 server:
   type: default
   applicationConnectors:
     - type: http
       port: 8080
-      bindHost: 127.0.0.1 # only bind to loopback
+      #bindHost: 127.0.0.1 # only bind to loopback
   adminConnectors:
     - type: http
       port: 8081
-      bindHost: 127.0.0.1 # only bind to loopback
+      #bindHost: 127.0.0.1 # only bind to loopback
      
 logging:
   level: INFO

@@ -5,6 +5,7 @@ import cloud.benchflow.experimentsmanager.resources.faban.RunBenchmarkResource;
 import cloud.benchflow.experimentsmanager.resources.faban.StatusBenchmarkResource;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
+import de.thomaskrille.dropwizard_template_config.TemplateConfigBundle;
 import io.dropwizard.Application;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.setup.Bootstrap;
@@ -28,6 +29,7 @@ public class ExperimentsManagerApplication extends Application<ExperimentsManage
     @Override
     public void initialize(Bootstrap<ExperimentsManagerConfiguration> bootstrap) {
         // nothing to do yet
+        bootstrap.addBundle(new TemplateConfigBundle());
     }
 
     @Override
