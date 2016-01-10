@@ -14,6 +14,7 @@ import cloud.benchflow.faban.client.responses.DeployStatus;
 
 import com.google.common.base.Predicate;
 import com.google.common.io.ByteStreams;
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.minio.errors.ClientException;
@@ -47,10 +48,11 @@ import java.util.zip.ZipInputStream;
 public class DeployBenchmarkResource {
 
     private final MinioHandler mh;
-    @Named("faban")
-    private FabanConfiguration fabanConf;
+    private final FabanClient fc;
 
-    public DeployBenchmarkResource(MinioHandler mh) {
+    @Inject
+    public DeployBenchmarkResource(@Named("faban") FabanClient fc, @Named("minio") MinioHandler mh) {
+        this.fc = fc;
         this.mh = mh;
     }
 
@@ -78,13 +80,13 @@ public class DeployBenchmarkResource {
 
         int driversCount = 0;
         
-        FabanClientConfigImpl fabanConfig;
-		try {
-			fabanConfig = new FabanClientConfigImpl(fabanConf.getUser(), fabanConf.getPassword(), new URI(fabanConf.getAddress()));
-		} catch (URISyntaxException e1) {
-			throw new BenchmarkRunException();
-		}
-        FabanClient fc = new FabanClient().withConfig(fabanConfig);
+//        FabanClientConfigImpl fabanConfig;
+//		try {
+//			fabanConfig = new FabanClientConfigImpl(fabanConf.getUser(), fabanConf.getPassword(), new URI(fabanConf.getAddress()));
+//		} catch (URISyntaxException e1) {
+//			throw new BenchmarkRunException();
+//		}
+//        FabanClient fc = new FabanClient().withConfig(fabanConfig);
 
         try(ZipInputStream zin = new ZipInputStream(in)) {
             DeployStatus status = null;

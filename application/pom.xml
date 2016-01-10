@@ -44,7 +44,7 @@
         <dependency>
 		    <groupId>com.github.benchflow</groupId>
 		    <artifactId>faban-client</artifactId>
-		    <version>v-dev</version>
+		    <version>dev-SNAPSHOT</version>
 		</dependency>
 
         <dependency>
