@@ -2,8 +2,8 @@ package cloud.benchflow.experimentsmanager.configurations;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
- *         <p/>
- *         Created on 07/01/16.
+ *
+ * Created on 07/01/16.
  */
 public class DriversMakerConfiguration {
 
