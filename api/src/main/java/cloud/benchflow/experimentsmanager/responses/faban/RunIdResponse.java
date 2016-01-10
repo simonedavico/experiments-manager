@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RunIdResponse {
 
-    @JsonProperty
+    @JsonProperty("runId")
     private String id;
 
     public RunIdResponse(String id) {

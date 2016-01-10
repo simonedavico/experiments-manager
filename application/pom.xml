@@ -10,8 +10,9 @@
 	<artifactId>application</artifactId>
 	<properties>
 		<jersey.multipart.version>2.19</jersey.multipart.version>
-        <minio.version>0.2.5</minio.version>
-        <faban.client.version>v-dev</faban.client.version>
+        <minio.version>0.2.6</minio.version>
+        <faban.client.version>0.1.0</faban.client.version>
+
 	</properties>
 	<dependencies>
 

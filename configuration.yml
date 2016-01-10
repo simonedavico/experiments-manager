@@ -1,10 +1,12 @@
 #Dropwizard
-
 minio:
   accessKey: ${env.MINIO_ACCESS_KEY}
   secretKey: ${env.MINIO_SECRET_KEY}
   address: ${env.MINIO_ADDRESS}
- 
+
+drivers.maker:
+  address: ${env.DRIVERS_MAKER_ADDRESS}
+
 faban:
   user: ${env.FABAN_USER!""}
   password: ${env.FABAN_PASSWORD!""}

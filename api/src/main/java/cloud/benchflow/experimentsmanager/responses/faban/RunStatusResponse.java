@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RunStatusResponse {
 
-    @JsonProperty
+    @JsonProperty("runStatus")
     private String status;
 
     public String getStatus() {

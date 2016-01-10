@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class DeployStatusResponse {
 
-    @JsonProperty
+    @JsonProperty("status")
     private String status;
 
     public String getStatus() {
