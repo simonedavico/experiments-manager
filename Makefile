@@ -12,16 +12,16 @@ clean:
 	mvn clean
 
 build:
-	JAVA_HOME=$(JAVA_HOME) mvn package
+	JAVA_HOME=$(JAVA_HOME) mvn -U package
 
 build_release:
-	JAVA_HOME=$(JAVA_HOME) mvn install
+	JAVA_HOME=$(JAVA_HOME) mvn -U install
 
 install:
-	JAVA_HOME=$(JAVA_HOME) mvn install
+	JAVA_HOME=$(JAVA_HOME) mvn -U install
 
 test:
-	JAVA_HOME=$(JAVA_HOME) mvn test
+	JAVA_HOME=$(JAVA_HOME) mvn -U test
 
 build_container_local:
 	JAVA_HOME=$(JAVA_HOME) mvn package
