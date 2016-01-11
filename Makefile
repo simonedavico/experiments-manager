@@ -24,7 +24,7 @@ test:
 	JAVA_HOME=$(JAVA_HOME) mvn -U test
 
 build_container_local:
-	JAVA_HOME=$(JAVA_HOME) mvn package
+	JAVA_HOME=$(JAVA_HOME) mvn -U package
 	docker build -t $(DOCKERIMAGENAME):$(VERSION) -f Dockerfile.test .
 	rm target/benchflow-$(REPONAME).jar
 
