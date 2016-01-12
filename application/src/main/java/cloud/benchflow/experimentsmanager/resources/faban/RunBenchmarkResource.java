@@ -57,7 +57,7 @@ public class RunBenchmarkResource {
                                  @DefaultValue("null") @FormDataParam("config") FormDataContentDisposition configDetail) {
 
         try {
-            if(configInputStream != null) {
+            if(configInputStream == null) {
                 //retrieve it from minio
                 configInputStream = mh.getConfig(benchmarkId);
             }
