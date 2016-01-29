@@ -3,6 +3,8 @@ package cloud.benchflow.experimentsmanager.modules;
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
 import cloud.benchflow.experimentsmanager.configurations.MinioConfiguration;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
+import cloud.benchflow.experimentsmanager.utils.MinioHandlerImpl;
+import cloud.benchflow.experimentsmanager.utils.MockMinioHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -28,7 +30,8 @@ public class MinioModule extends AbstractModule {
     @Named("minio")
     public MinioHandler provideMinio(ExperimentsManagerConfiguration config) throws MalformedURLException, ClientException {
         MinioConfiguration minioConfig = config.getMinioConfiguration();
-        return new MinioHandler(minioConfig.getAddress(), minioConfig.getAccessKey(), minioConfig.getSecretKey());
+        return config.useMock() ? new MockMinioHandler() :
+                                  new MinioHandlerImpl(minioConfig.getAddress(), minioConfig.getAccessKey(), minioConfig.getSecretKey());
     }
 
 }

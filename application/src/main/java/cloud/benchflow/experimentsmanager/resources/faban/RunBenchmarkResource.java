@@ -4,7 +4,7 @@ import cloud.benchflow.experimentsmanager.exceptions.BenchmarkRunException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchBenchmarkException;
 import cloud.benchflow.experimentsmanager.responses.faban.RunIdResponse;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
-import cloud.benchflow.experimentsmanager.utils.MinioHandler;
+import cloud.benchflow.experimentsmanager.utils.MinioHandlerImpl;
 
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.BenchmarkNameNotFoundException;
@@ -35,12 +35,12 @@ import java.io.InputStream;
 @Path("/faban/run")
 public class RunBenchmarkResource {
 
-    private final MinioHandler mh;
+    private final MinioHandlerImpl mh;
     private final DriversMaker dm;
     private final FabanClient fc;
 
     @Inject
-    public RunBenchmarkResource(@Named("minio") final MinioHandler mh,
+    public RunBenchmarkResource(@Named("minio") final MinioHandlerImpl mh,
                                 @Named("drivers.maker") final DriversMaker  dm,
                                 @Named("faban") final FabanClient fc) {
         this.mh = mh;

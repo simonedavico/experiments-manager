@@ -26,6 +26,16 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty
     private HttpClientConfiguration httpClient = new HttpClientConfiguration();
 
+    @Valid
+    @NotNull
+    private boolean mock;
+
+    @JsonProperty("mock")
+    public boolean useMock() { return mock; }
+
+    @JsonProperty("mock")
+    public void setMock(boolean mock) { this.mock = mock; }
+
     public HttpClientConfiguration getHttpClientConfiguration() {
         return httpClient;
     }
@@ -50,17 +60,11 @@ public class ExperimentsManagerConfiguration extends Configuration {
         this.driversMakerConfiguration = driversMakerConfiguration;
     }
 
-	/**
-	 * @return the fabanConfiguration
-	 */
     @JsonProperty("faban")
 	public FabanConfiguration getFabanConfiguration() {
 		return fabanConfiguration;
 	}
 
-	/**
-	 * @param fabanConfiguration the fabanConfiguration to set
-	 */
     @JsonProperty("faban")
 	public void setFabanConfiguration(FabanConfiguration fabanConfiguration) {
 		this.fabanConfiguration = fabanConfiguration;
