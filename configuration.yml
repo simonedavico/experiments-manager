@@ -22,7 +22,9 @@ server:
     - type: http
       port: 8081
       #bindHost: 127.0.0.1 # only bind to loopback
-     
+
+mock: false
+
 logging:
   level: INFO
   loggers:
