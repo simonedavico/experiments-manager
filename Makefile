@@ -37,7 +37,7 @@ test_container_local:
 	-e "MINIO_SECRET_KEY=$(MINIO_SECRETACCESSKEY)" -e "ENVCONSUL_CONSUL=$(ENVCONSUL_CONSUL)" \
 	-e "FABAN_ADDRESS=$(FABAN_ADDRESS)" -e "DRIVERS_MAKER_ADDRESS=$(DRIVERS_MAKER_ADDRESS)" \
 	-e "DB_USER=$(DB_USER)" -e "DB_PASSWORD=$(DB_PASSWORD)" -e "DB_HOST=$(DB_HOST)" -e "DB_PORT=$(DB_PORT)" -e "DB_NAME=$(DB_NAME)" \
-	-p 8080:8080 --net="host" --link=memsql:memsql --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
+	-p 8080:8080 --net="host" --link=$(DBNAME) --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
 
 rm_container_local:
     docker rm -f -v $(DBNAME)
