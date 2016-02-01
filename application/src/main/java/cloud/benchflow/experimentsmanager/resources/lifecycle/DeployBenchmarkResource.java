@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.resources.faban;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
