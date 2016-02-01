@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.responses.faban;
+package cloud.benchflow.experimentsmanager.responses.lifecycle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

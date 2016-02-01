@@ -3,7 +3,7 @@ package cloud.benchflow.experimentsmanager.resources.lifecycle;
 import cloud.benchflow.experimentsmanager.db.DbUtils;
 import cloud.benchflow.experimentsmanager.exceptions.FabanException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchRunIdException;
-import cloud.benchflow.experimentsmanager.responses.faban.RunStatusResponse;
+import cloud.benchflow.experimentsmanager.responses.lifecycle.RunStatusResponse;
 
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;

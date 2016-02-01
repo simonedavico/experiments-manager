@@ -8,6 +8,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,7 +23,8 @@ public class DbUtils {
     public DbUtils(String url, int port, String dbName, String username) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
-               .applySetting("hibernate.connection.url", "jdbc:mysql://" + url + ":" + port + "/" + dbName)
+               .applySetting("hibernate.connection.url", "jdbc:mysql://" + url + ":" +
+                              port + "/" + dbName + "?createDatabaseIfNotExist=true")
                .applySetting("hibernate.connection.username", username)
                .applySetting("hibernate.connection.password", "");
 
@@ -32,11 +34,45 @@ public class DbUtils {
             this.sessionFactory = new MetadataSources(registry)
                                       .buildMetadata()
                                       .buildSessionFactory();
+
+            checkDatabaseSchema();
+
         }
         catch (Exception e) {
-            StandardServiceRegistryBuilder.destroy(registry);
-            throw new RuntimeException("Encountered a problem connecting to database " + dbName, e);
+            //TODO: understand why an exception gets thrown here if the db doesn't exist
+            //even if createDatabaseIfNotExist=true is specified.
+//            StandardServiceRegistryBuilder.destroy(registry);
+//            throw new RuntimeException("Encountered a problem connecting to database " + dbName, e);
         }
+    }
+
+    /***
+     * Checks existence of expected tables, and creates them if they
+     * don't exist
+     */
+    private void checkDatabaseSchema() {
+        Session session = sessionFactory.openSession();
+
+        //check for existence of tables EXPERIMENTS and TRIALS
+        String sql = "show tables like :tableName";
+        List results = session.createSQLQuery(sql).setParameter("tableName", "EXPERIMENTS").list();
+
+        if(results.size() == 0) {
+            session.createSQLQuery("create table EXPERIMENTS " +
+                    "(EXPERIMENT_ID bigint not null auto_increment, " +
+                    "BENCHMARK_NAME varchar(255), primary key (EXPERIMENT_ID))").executeUpdate();
+        }
+
+        results = session.createSQLQuery(sql).setParameter("tableName", "TRIALS").list();
+        if(results.size() == 0) {
+            session.createSQLQuery("create table TRIALS " +
+                    "(TRIAL_ID integer not null auto_increment, " +
+                    "FABAN_RUN_ID varchar(255), " +
+                    "EXPERIMENT_ID bigint, primary key (TRIAL_ID))").executeUpdate();
+        }
+
+        session.getTransaction().commit();
+        session.close();
     }
 
     /***

@@ -1,5 +1,8 @@
 REPONAME = experiments-manager
 DOCKERIMAGENAME = benchflow/$(REPONAME)
+
+DBNAME = memsql
+
 VERSION = dev
 JAVA_VERSION_FOR_COMPILATION = java-8-oracle 
 JAVA_HOME := `update-java-alternatives -l | cut -d' ' -f3 | grep $(JAVA_VERSION_FOR_COMPILATION)`"/jre"
@@ -29,6 +32,7 @@ build_container_local:
 	rm target/benchflow-$(REPONAME).jar
 
 test_container_local:
+    docker run -d -p 3306:3306 -p 9000:9000 --name $(DBNAME) memsql/quickstart
 	docker run -ti --rm -e "MINIO_ADDRESS=$(MINIO_HOST)" -e "MINIO_ACCESS_KEY=$(MINIO_ACCESSKEYID)" \
 	-e "MINIO_SECRET_KEY=$(MINIO_SECRETACCESSKEY)" -e "ENVCONSUL_CONSUL=$(ENVCONSUL_CONSUL)" \
 	-e "FABAN_ADDRESS=$(FABAN_ADDRESS)" -e "DRIVERS_MAKER_ADDRESS=$(DRIVERS_MAKER_ADDRESS)" \
@@ -36,4 +40,5 @@ test_container_local:
 	-p 8080:8080 --net="host" --link=memsql:memsql --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
 
 rm_container_local:
+    docker rm -f -v $(DBNAME)
 	docker rm -f -v $(REPONAME)

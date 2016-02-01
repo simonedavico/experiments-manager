@@ -5,7 +5,7 @@ import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import cloud.benchflow.experimentsmanager.db.entities.Trial;
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkRunException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchBenchmarkException;
-import cloud.benchflow.experimentsmanager.responses.faban.TrialIdResponse;
+import cloud.benchflow.experimentsmanager.responses.lifecycle.TrialIdResponse;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 

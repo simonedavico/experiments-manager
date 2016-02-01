@@ -15,7 +15,7 @@
 
         <!-- Database connection settings -->
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <!--<property name="connection.url">jdbc:mysql://localhost:13000/memsql_example</property>-->
+        <!--<property name="connection.url">jdbc:mysql://localhost:13000/memsql_example?createDatabaseIfNotExist=true</property>-->
         <!--<property name="connection.username">root</property>-->
         <!--<property name="connection.password"></property>-->
 
