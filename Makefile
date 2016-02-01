@@ -1,7 +1,7 @@
 REPONAME = experiments-manager
 DOCKERIMAGENAME = benchflow/$(REPONAME)
 VERSION = dev
-JAVA_VERSION_FOR_COMPILATION = java-8-oracle
+JAVA_VERSION_FOR_COMPILATION = java-8-oracle 
 JAVA_HOME := `update-java-alternatives -l | cut -d' ' -f3 | grep $(JAVA_VERSION_FOR_COMPILATION)`"/jre"
 
 .PHONY: all build_release 
@@ -29,10 +29,10 @@ build_container_local:
 	rm target/benchflow-$(REPONAME).jar
 
 test_container_local:
-	docker run -ti --rm -e "MINIO_ADDRESS=http://195.176.181.55:9000" -e "MINIO_ACCESS_KEY=CYNQML6R7V12MTT32W6P" \
-	-e "MINIO_SECRET_KEY=SQ96V5pg02Z3kZ/0ViF9YY6GwWzZvoBmElpzEEjn" -e "ENVCONSUL_CONSUL=195.176.181.55:8500" \
-	-e "FABAN_ADDRESS=http://195.176.181.55:9980" -e "DRIVERS_MAKER_ADDRESS=http://195.176.181.55:8060" \
-	-e "DB_USER=root" -e "DB_PASSWORD=" -e "DB_HOST=localhost" -e "DB_PORT=13000" -e "DB_NAME=memsql_example" \
+	docker run -ti --rm -e "MINIO_ADDRESS=$(MINIO_HOST)" -e "MINIO_ACCESS_KEY=$(MINIO_ACCESSKEYID)" \
+	-e "MINIO_SECRET_KEY=$(MINIO_SECRETACCESSKEY)" -e "ENVCONSUL_CONSUL=$(ENVCONSUL_CONSUL)" \
+	-e "FABAN_ADDRESS=$(FABAN_ADDRESS)" -e "DRIVERS_MAKER_ADDRESS=$(DRIVERS_MAKER_ADDRESS)" \
+	-e "DB_USER=$(DB_USER)" -e "DB_PASSWORD=$(DB_PASSWORD)" -e "DB_HOST=$(DB_HOST)" -e "DB_PORT=$(DB_PORT)" -e "DB_NAME=$(DB_NAME)" \
 	-p 8080:8080 --net="host" --link=memsql:memsql --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
 
 rm_container_local:
