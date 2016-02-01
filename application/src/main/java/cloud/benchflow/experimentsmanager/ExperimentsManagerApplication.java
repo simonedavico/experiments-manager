@@ -1,5 +1,6 @@
 package cloud.benchflow.experimentsmanager;
 
+import cloud.benchflow.experimentsmanager.modules.DbModule;
 import cloud.benchflow.experimentsmanager.modules.DriversMakerModule;
 import cloud.benchflow.experimentsmanager.modules.FabanModule;
 import cloud.benchflow.experimentsmanager.modules.MinioModule;
@@ -31,7 +32,7 @@ public class ExperimentsManagerApplication extends Application<ExperimentsManage
         GuiceBundle<ExperimentsManagerConfiguration> guiceBundle =
                 GuiceBundle.<ExperimentsManagerConfiguration>builder()
                 .enableAutoConfig("cloud.benchflow.experimentsmanager")
-                .modules(new FabanModule(), new MinioModule(), new DriversMakerModule())
+                .modules(new FabanModule(), new MinioModule(), new DriversMakerModule(), new DbModule())
                 .build();
 
         bootstrap.addBundle(guiceBundle);

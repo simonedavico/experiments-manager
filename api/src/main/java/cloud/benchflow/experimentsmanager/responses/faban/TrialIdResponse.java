@@ -7,12 +7,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * Created on 11/12/15.
  */
-public class RunIdResponse {
+public class TrialIdResponse {
 
-    @JsonProperty("runId")
+    @JsonProperty("trialId")
     private String id;
 
-    public RunIdResponse(String id) {
+    public TrialIdResponse(String id) {
         this.id = id;
     }
 

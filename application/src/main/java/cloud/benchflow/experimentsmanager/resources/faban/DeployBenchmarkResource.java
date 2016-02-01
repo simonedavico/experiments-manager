@@ -4,7 +4,7 @@ import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
 import cloud.benchflow.experimentsmanager.exceptions.UndeployableDriverException;
 import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
-import cloud.benchflow.experimentsmanager.utils.MinioHandlerImpl;
+import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.responses.DeployStatus;
@@ -39,14 +39,14 @@ import java.util.zip.ZipInputStream;
  * Created on 25/11/15.
  */
 
-@Path("/faban/deploy")
+@Path("/deploy")
 public class DeployBenchmarkResource {
 
-    private final MinioHandlerImpl mh;
+    private final MinioHandler mh;
     private final FabanClient fc;
 
     @Inject
-    public DeployBenchmarkResource(@Named("faban") FabanClient fc, @Named("minio") MinioHandlerImpl mh) {
+    public DeployBenchmarkResource(@Named("faban") FabanClient fc, @Named("minio") MinioHandler mh) {
         this.fc = fc;
         this.mh = mh;
     }

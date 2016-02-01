@@ -1,10 +1,13 @@
 package cloud.benchflow.experimentsmanager.resources.faban;
 
+import cloud.benchflow.experimentsmanager.db.DbUtils;
+import cloud.benchflow.experimentsmanager.db.entities.Experiment;
+import cloud.benchflow.experimentsmanager.db.entities.Trial;
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkRunException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchBenchmarkException;
-import cloud.benchflow.experimentsmanager.responses.faban.RunIdResponse;
+import cloud.benchflow.experimentsmanager.responses.faban.TrialIdResponse;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
-import cloud.benchflow.experimentsmanager.utils.MinioHandlerImpl;
+import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.BenchmarkNameNotFoundException;
@@ -25,36 +28,37 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 
-
-
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
  *
  * Created on 04/12/15.
  */
-@Path("/faban/run")
+@Path("/run")
 public class RunBenchmarkResource {
 
-    private final MinioHandlerImpl mh;
+    private final MinioHandler mh;
     private final DriversMaker dm;
     private final FabanClient fc;
+    private final DbUtils db;
 
     @Inject
-    public RunBenchmarkResource(@Named("minio") final MinioHandlerImpl mh,
+    public RunBenchmarkResource(@Named("minio") final MinioHandler mh,
                                 @Named("drivers.maker") final DriversMaker  dm,
-                                @Named("faban") final FabanClient fc) {
+                                @Named("faban") final FabanClient fc,
+                                @Named("db") final DbUtils db) {
         this.mh = mh;
         this.dm = dm;
         this.fc = fc;
+        this.db = db;
     }
 
     @POST
     @Path("{benchmarkId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public RunIdResponse runBenchmark(@PathParam("benchmarkId") String benchmarkId,
-                                 @DefaultValue("null") @FormDataParam("config") InputStream configInputStream,
-                                 @DefaultValue("null") @FormDataParam("config") FormDataContentDisposition configDetail) {
+    public TrialIdResponse runBenchmark(@PathParam("benchmarkId") String benchmarkId,
+                                        @DefaultValue("null") @FormDataParam("config") InputStream configInputStream,
+                                        @DefaultValue("null") @FormDataParam("config") FormDataContentDisposition configDetail) {
 
         try {
             if(configInputStream == null) {
@@ -62,9 +66,21 @@ public class RunBenchmarkResource {
                 configInputStream = mh.getConfig(benchmarkId);
             }
             InputStream converted = dm.convert(configInputStream);
+
+            //create the experiment
+            Experiment e = new Experiment(benchmarkId);
             RunId rs = fc.submit(benchmarkId, benchmarkId, converted);
 
-            return new RunIdResponse(rs.toString());
+            //for now, we only have one trial
+            Trial t = new Trial(rs.toString());
+            e.addTrial(t);
+
+            //save the experiment in the database
+            db.saveExperiment(e);
+
+            //return the id for the trial
+            return new TrialIdResponse(Integer.toString(t.getTrialId()));
+
         } catch (BenchmarkNameNotFoundException e) {
             throw new NoSuchBenchmarkException(benchmarkId);
         } catch (FabanClientException | ClientException | IOException e) {

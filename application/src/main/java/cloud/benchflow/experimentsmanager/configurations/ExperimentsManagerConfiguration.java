@@ -28,6 +28,11 @@ public class ExperimentsManagerConfiguration extends Configuration {
 
     @Valid
     @NotNull
+    @JsonProperty
+    private DbConfiguration dbConfiguration = new DbConfiguration();
+
+    @Valid
+    @NotNull
     private boolean mock;
 
     @JsonProperty("mock")
@@ -69,5 +74,15 @@ public class ExperimentsManagerConfiguration extends Configuration {
 	public void setFabanConfiguration(FabanConfiguration fabanConfiguration) {
 		this.fabanConfiguration = fabanConfiguration;
 	}
+
+    @JsonProperty("database")
+    public DbConfiguration getDbConfiguration() {
+        return dbConfiguration;
+    }
+
+    @JsonProperty("database")
+    public void setDbConfiguration(DbConfiguration dbConfiguration) {
+        this.dbConfiguration = dbConfiguration;
+    }
 
 }

@@ -12,6 +12,15 @@ faban:
   password: ${env.FABAN_PASSWORD!""}
   address: ${env.FABAN_ADDRESS}
 
+db:
+  user: ${env.DB_USER!"root"}
+  password: ${env.DB_PASSWORD!""}
+  name: ${env.DB_NAME!"memsql_example"}
+  host: ${env.DB_HOST!"localhost"}
+  port: ${env.DB_PORT!"13000"}
+
+mock: false
+
 server:
   type: default
   applicationConnectors:
@@ -22,8 +31,6 @@ server:
     - type: http
       port: 8081
       #bindHost: 127.0.0.1 # only bind to loopback
-
-mock: false
 
 logging:
   level: INFO

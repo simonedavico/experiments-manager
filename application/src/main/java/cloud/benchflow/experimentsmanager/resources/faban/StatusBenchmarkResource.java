@@ -1,5 +1,6 @@
 package cloud.benchflow.experimentsmanager.resources.faban;
 
+import cloud.benchflow.experimentsmanager.db.DbUtils;
 import cloud.benchflow.experimentsmanager.exceptions.FabanException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchRunIdException;
 import cloud.benchflow.experimentsmanager.responses.faban.RunStatusResponse;
@@ -24,14 +25,17 @@ import com.google.inject.name.Named;
  *
  * Created on 06/12/15.
  */
-@Path("faban/status")
+@Path("/status")
 public class StatusBenchmarkResource {
 
     private FabanClient fabanClient;
+    private DbUtils db;
 
     @Inject
-    public StatusBenchmarkResource(@Named("faban") FabanClient fabanClient) {
+    public StatusBenchmarkResource(@Named("faban") FabanClient fabanClient,
+                                   @Named("db")DbUtils db) {
         this.fabanClient = fabanClient;
+        this.db = db;
     }
 
     @Path("/{runId}")
@@ -41,7 +45,10 @@ public class StatusBenchmarkResource {
 
         try {
 
-            RunStatus status = fabanClient.status(new RunId(runId));
+            //retrieve the faban runId from the database
+            String fabanRunId = db.getFabanRunId(Integer.parseInt(runId));
+            RunStatus status = fabanClient.status(new RunId(fabanRunId));
+//            RunStatus status = fabanClient.status(new RunId(runId));
             return new RunStatusResponse(status.getStatus().toString());
 
         } catch (RunIdNotFoundException e) {
