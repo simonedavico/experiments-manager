@@ -15,7 +15,7 @@ faban:
 db:
   user: ${env.DB_USER!"root"}
   password: ${env.DB_PASSWORD!""}
-  name: ${env.DB_NAME!"memsql_example"}
+  name: ${env.DB_NAME!"provahibernate"}
   host: ${env.DB_HOST!"localhost"}
   port: ${env.DB_PORT!"13000"}
 

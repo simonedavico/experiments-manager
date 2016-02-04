@@ -9,7 +9,6 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
@@ -39,10 +38,8 @@ public class DbUtils {
 
         }
         catch (Exception e) {
-            //TODO: understand why an exception gets thrown here if the db doesn't exist
-            //even if createDatabaseIfNotExist=true is specified.
-//            StandardServiceRegistryBuilder.destroy(registry);
-//            throw new RuntimeException("Encountered a problem connecting to database " + dbName, e);
+            StandardServiceRegistryBuilder.destroy(registry);
+            throw new RuntimeException("Encountered a problem connecting to database " + dbName, e);
         }
     }
 
@@ -52,23 +49,36 @@ public class DbUtils {
      */
     private void checkDatabaseSchema() {
         Session session = sessionFactory.openSession();
+        session.beginTransaction();
+
+        final String createExperimentsTable =
+                "create table EXPERIMENTS " +
+                "(USERNAME varchar(255) not null, " +
+                "BENCHMARK_NAME varchar(255) not null, " +
+                "EXP_NUMBER bigint not null, " +
+                "PERFORMED_ON timestamp,  " +
+                "primary key(USERNAME, BENCHMARK_NAME, EXP_NUMBER));";
+
+        final String createTrialsTable =
+                "create table TRIALS " +
+                "(USERNAME varchar(255) not null, " +
+                "BENCHMARK_NAME varchar(255) not null, " +
+                "EXP_NUMBER bigint not null, " +
+                "TRIAL_NUMBER integer not null, " +
+                "FABAN_RUN_ID varchar(255), " +
+                "primary key (USERNAME, BENCHMARK_NAME, EXP_NUMBER, TRIAL_NUMBER))";
 
         //check for existence of tables EXPERIMENTS and TRIALS
-        String sql = "show tables like :tableName";
-        List results = session.createSQLQuery(sql).setParameter("tableName", "EXPERIMENTS").list();
+        final String checkExists = "show tables like :tableName";
+        List results = session.createSQLQuery(checkExists).setParameter("tableName", "EXPERIMENTS").list();
 
         if(results.size() == 0) {
-            session.createSQLQuery("create table EXPERIMENTS " +
-                    "(EXPERIMENT_ID bigint not null auto_increment, " +
-                    "BENCHMARK_NAME varchar(255), primary key (EXPERIMENT_ID))").executeUpdate();
+            session.createSQLQuery(createExperimentsTable).executeUpdate();
         }
 
-        results = session.createSQLQuery(sql).setParameter("tableName", "TRIALS").list();
+        results = session.createSQLQuery(checkExists).setParameter("tableName", "TRIALS").list();
         if(results.size() == 0) {
-            session.createSQLQuery("create table TRIALS " +
-                    "(TRIAL_ID integer not null auto_increment, " +
-                    "FABAN_RUN_ID varchar(255), " +
-                    "EXPERIMENT_ID bigint, primary key (TRIAL_ID))").executeUpdate();
+            session.createSQLQuery(createTrialsTable).executeUpdate();
         }
 
         session.getTransaction().commit();
@@ -89,16 +99,27 @@ public class DbUtils {
 
     /***
      *
-     * @param trialId the id of the trial
-     * @return the faban runId corresponding to the given trial
+     * @param username
+     * @param benchmarkName
+     * @param experimentNumber
+     * @param trialNumber
+     * @return
      */
-    public String getFabanRunId(int trialId) {
+    public String getFabanRunId(String username, String benchmarkName, long experimentNumber, int trialNumber) {
         Session s = this.sessionFactory.openSession();
         s.beginTransaction();
 
-        String query = "select fabanRunId from Trial where trialId = :requestId";
+        String query = "select t.fabanRunId from Trial t where " +
+                       "t.experiment.username = :uname and " +
+                       "t.experiment.benchmarkName = :bname and " +
+                       "t.experiment.experimentNumber = :expNum and " +
+                       "t.trialNumber = :trialNum";
+
         String fabanRunId = (String) s.createQuery(query)
-                                      .setParameter("requestId", trialId)
+                                      .setParameter("uname", username)
+                                      .setParameter("bname", benchmarkName)
+                                      .setParameter("expNum", experimentNumber)
+                                      .setParameter("trialNum", trialNumber)
                                       .uniqueResult();
 
         s.getTransaction().commit();

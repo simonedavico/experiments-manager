@@ -53,36 +53,39 @@ public class RunBenchmarkResource {
     }
 
     @POST
-    @Path("{benchmarkId}")
+    @Path("{benchmarkName}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public TrialIdResponse runBenchmark(@PathParam("benchmarkId") String benchmarkId,
+    public TrialIdResponse runBenchmark(@PathParam("benchmarkName") String benchmarkName,
                                         @DefaultValue("null") @FormDataParam("config") InputStream configInputStream,
                                         @DefaultValue("null") @FormDataParam("config") FormDataContentDisposition configDetail) {
 
         try {
             if(configInputStream == null) {
                 //retrieve it from minio
-                configInputStream = mh.getConfig(benchmarkId);
+                configInputStream = mh.getConfig(benchmarkName);
             }
             InputStream converted = dm.convert(configInputStream);
 
             //create the experiment
-            Experiment e = new Experiment(benchmarkId);
-            RunId rs = fc.submit(benchmarkId, benchmarkId, converted);
+            Experiment e = new Experiment(benchmarkName);
+            RunId rs = fc.submit(benchmarkName, benchmarkName, converted);
 
             //for now, we only have one trial
-            Trial t = new Trial(rs.toString());
+            Trial t = new Trial(1);
+            t.setFabanRunId(rs.toString());
             e.addTrial(t);
 
             //save the experiment in the database
             db.saveExperiment(e);
 
             //return the id for the trial
-            return new TrialIdResponse(Integer.toString(t.getTrialId()));
+            return new TrialIdResponse(t.getExperiment().getBenchmarkName(),
+                                       t.getExperiment().getExperimentNumber(),
+                                       t.getTrialNumber());
 
         } catch (BenchmarkNameNotFoundException e) {
-            throw new NoSuchBenchmarkException(benchmarkId);
+            throw new NoSuchBenchmarkException(benchmarkName);
         } catch (FabanClientException | ClientException | IOException e) {
             throw new BenchmarkRunException();
         }

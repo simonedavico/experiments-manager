@@ -38,21 +38,21 @@ public class StatusBenchmarkResource {
         this.db = db;
     }
 
-    @Path("/{runId}")
+    @Path("{benchmarkName}/{experimentNumber}/{trialNumber}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public RunStatusResponse getRunStatus(@PathParam("runId") String runId) {
+    public RunStatusResponse getRunStatus(@PathParam("benchmarkName") String benchmarkName,
+                                          @PathParam("experimentNumber") long experimentNumber,
+                                          @PathParam("trialNumber") int trialNumber) {
 
         try {
 
-            //retrieve the faban runId from the database
-            String fabanRunId = db.getFabanRunId(Integer.parseInt(runId));
+            String fabanRunId = db.getFabanRunId("Simone", benchmarkName, experimentNumber, trialNumber);
             RunStatus status = fabanClient.status(new RunId(fabanRunId));
-//            RunStatus status = fabanClient.status(new RunId(runId));
             return new RunStatusResponse(status.getStatus().toString());
 
         } catch (RunIdNotFoundException e) {
-            throw new NoSuchRunIdException("No run scheduled for id " + runId + ".");
+            throw new NoSuchRunIdException("No run scheduled for id.");
         } catch (FabanClientException e) {
             throw new FabanException(e);
         }
