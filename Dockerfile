@@ -9,6 +9,8 @@ RUN wget -q --no-check-certificate -O /app/benchflow-experiments-manager.jar htt
 
 COPY configuration.yml /app/
 
+COPY ./services/envcp/config.tpl /app/config.tpl
+
 COPY ./services/300-experiments-manager.conf /apps/chaperone.d/300-experiments-manager.conf
  
 EXPOSE 8080
