@@ -25,14 +25,12 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 
-
-
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
  *
  * Created on 04/12/15.
  */
-@Path("/faban/run")
+@Path("/run")
 public class RunBenchmarkResource {
 
     private final MinioHandler mh;
@@ -53,8 +51,8 @@ public class RunBenchmarkResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public RunIdResponse runBenchmark(@PathParam("benchmarkId") String benchmarkId,
-                                 @DefaultValue("null") @FormDataParam("config") InputStream configInputStream,
-                                 @DefaultValue("null") @FormDataParam("config") FormDataContentDisposition configDetail) {
+                                 @DefaultValue("null") @FormDataParam("benchflow-benchmark") InputStream configInputStream,
+                                 @DefaultValue("null") @FormDataParam("benchflow-benchmark") FormDataContentDisposition configDetail) {
 
         try {
             if(configInputStream == null) {
@@ -65,6 +63,7 @@ public class RunBenchmarkResource {
             RunId rs = fc.submit(benchmarkId, benchmarkId, converted);
 
             return new RunIdResponse(rs.toString());
+//            return converted;
         } catch (BenchmarkNameNotFoundException e) {
             throw new NoSuchBenchmarkException(benchmarkId);
         } catch (FabanClientException | ClientException | IOException e) {

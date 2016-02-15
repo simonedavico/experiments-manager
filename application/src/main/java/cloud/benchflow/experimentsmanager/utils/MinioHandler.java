@@ -1,44 +1,21 @@
 package cloud.benchflow.experimentsmanager.utils;
 
-import io.minio.MinioClient;
 import io.minio.errors.ClientException;
-import org.apache.http.entity.ContentType;
 
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
  *
- * Created on 03/12/15.
- *
- * TODO: should we expand this to a more high level library?
+ * Created on 29/01/16.
  */
-public class MinioHandler {
+public interface MinioHandler {
 
-    private static final String benchmarkBucket = "benchmarks";
-    private MinioClient mc;
+    void storeBenchmark(String benchmarkID, byte[] benchmark) throws IOException, ClientException;
 
-    public MinioHandler(final String address, final String accessKey, final String secretKey) throws MalformedURLException, ClientException {
-        mc = new MinioClient(address, accessKey, secretKey);
-    }
+    void storeConfig(String benchmarkID, String configName, byte[] config) throws IOException, ClientException;
 
-    private void storeObject(String id, byte[] object) throws IOException, ClientException {
-        mc.putObject(benchmarkBucket, id,
-                ContentType.APPLICATION_OCTET_STREAM.toString(),
-                object.length, new ByteArrayInputStream(object));
-    }
-
-    public void storeBenchmark(String benchmarkID, byte[] benchmark) throws IOException, ClientException {
-        storeObject(benchmarkID + "/benchmark.zip", benchmark);
-    }
-
-    public void storeConfig(String benchmarkID, byte[] config) throws IOException, ClientException {
-        storeObject(benchmarkID + "/benchflow-benchmark.yml", config);
-    }
-
-    public InputStream getConfig(String benchmarkId) throws IOException, ClientException {
-        return mc.getObject(benchmarkBucket, benchmarkId + "/benchflow-benchmark.yml");
-    }
+    InputStream getConfig(String benchmarkId) throws IOException, ClientException;
 
 }

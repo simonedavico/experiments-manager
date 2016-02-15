@@ -24,7 +24,7 @@ import com.google.inject.name.Named;
  *
  * Created on 06/12/15.
  */
-@Path("faban/status")
+@Path("/status")
 public class StatusBenchmarkResource {
 
     private FabanClient fabanClient;

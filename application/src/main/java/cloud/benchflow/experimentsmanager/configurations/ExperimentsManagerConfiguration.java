@@ -50,17 +50,11 @@ public class ExperimentsManagerConfiguration extends Configuration {
         this.driversMakerConfiguration = driversMakerConfiguration;
     }
 
-	/**
-	 * @return the fabanConfiguration
-	 */
     @JsonProperty("faban")
 	public FabanConfiguration getFabanConfiguration() {
 		return fabanConfiguration;
 	}
 
-	/**
-	 * @param fabanConfiguration the fabanConfiguration to set
-	 */
     @JsonProperty("faban")
 	public void setFabanConfiguration(FabanConfiguration fabanConfiguration) {
 		this.fabanConfiguration = fabanConfiguration;
