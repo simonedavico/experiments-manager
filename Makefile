@@ -1,7 +1,7 @@
 REPONAME = experiments-manager
 DOCKERIMAGENAME = benchflow/$(REPONAME)
 VERSION = dev
-JAVA_VERSION_FOR_COMPILATION = java-8-oracle
+JAVA_VERSION_FOR_COMPILATION = java-8-oracle 
 JAVA_HOME := `update-java-alternatives -l | cut -d' ' -f3 | grep $(JAVA_VERSION_FOR_COMPILATION)`"/jre"
 
 .PHONY: all build_release 
@@ -33,6 +33,7 @@ test_container_local:
 	-e "MINIO_SECRET_KEY=SQ96V5pg02Z3kZ/0ViF9YY6GwWzZvoBmElpzEEjn" -e "ENVCONSUL_CONSUL=195.176.181.55:8500" \
 	-e "FABAN_ADDRESS=http://195.176.181.55:9980" -e DRIVERS_MAKER_ADDRESS=$(DRIVERS_MAKER_ADDRESS) \
 	-p 8080:8080 --name $(REPONAME) $(DOCKERIMAGENAME):$(VERSION)
+
 
 rm_container_local:
 	docker rm -f -v $(REPONAME)

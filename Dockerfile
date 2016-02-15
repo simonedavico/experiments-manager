@@ -1,4 +1,4 @@
-FROM benchflow/base-images:envconsul-java8_dev
+FROM benchflow/base-images:dns-envconsul-java8_dev
 
 MAINTAINER Vincenzo FERME <info@vincenzoferme.it>
 
@@ -10,10 +10,5 @@ RUN wget -q --no-check-certificate -O /app/benchflow-experiments-manager.jar htt
 COPY configuration.yml /app/
 
 COPY ./services/300-experiments-manager.conf /apps/chaperone.d/300-experiments-manager.conf
-
-#TODO: remove, it is for testing
-RUN touch /app/test.tpl
-#TODO: remove, here because of a problem killing the container
-RUN rm /apps/chaperone.d/200-envconsul-envcp.conf
  
 EXPOSE 8080

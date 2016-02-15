@@ -18,3 +18,5 @@ application/.classpath
 
 #Custom files
 application/src/test/resources/configuration.properties
+
+benchflow_make
