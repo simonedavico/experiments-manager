@@ -33,8 +33,8 @@ public class MinioHandlerImpl implements MinioHandler {
         storeObject(benchmarkID + "/benchmark.zip", benchmark);
     }
 
-    public void storeConfig(String benchmarkID, byte[] config) throws IOException, ClientException {
-        storeObject(benchmarkID + "/benchflow-benchmark.yml", config);
+    public void storeConfig(String benchmarkID, String configName, byte[] config) throws IOException, ClientException {
+        storeObject(benchmarkID + "/config/" + configName, config);
     }
 
     public InputStream getConfig(String benchmarkId) throws IOException, ClientException {

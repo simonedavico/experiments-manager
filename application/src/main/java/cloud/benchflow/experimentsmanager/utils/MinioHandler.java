@@ -14,7 +14,7 @@ public interface MinioHandler {
 
     void storeBenchmark(String benchmarkID, byte[] benchmark) throws IOException, ClientException;
 
-    void storeConfig(String benchmarkID, byte[] config) throws IOException, ClientException;
+    void storeConfig(String benchmarkID, String configName, byte[] config) throws IOException, ClientException;
 
     InputStream getConfig(String benchmarkId) throws IOException, ClientException;
 

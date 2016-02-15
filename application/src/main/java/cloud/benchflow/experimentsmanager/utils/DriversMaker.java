@@ -3,6 +3,7 @@ package cloud.benchflow.experimentsmanager.utils;
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,10 +36,12 @@ public class DriversMaker {
 
         HttpPost post = new HttpPost(address + "/convert");
         HttpEntity multipartEntity = MultipartEntityBuilder.create()
-                                        .addBinaryBody("benchflow-config", benchflowConfig,
-                                                        ContentType.create("application/octet-stream"),
-                                                        "benchflow.config.yml")
-                                        //.addBinaryBody("benchflow-config", benchflowConfig)
+//                                        .addBinaryBody("benchflow-benchmark", benchflowConfig,
+//                                                        ContentType.create("application/octet-stream"),
+//                                                        "benchflow.config.yml")
+//                                        .addBinaryBody("benchflow-benchmark", benchflowConfig)
+                .addBinaryBody("benchflow-benchmark",benchflowConfig,ContentType.create("text/yaml", Consts.UTF_8), "benchflow-config.yml")
+
                                         .build();
         post.setEntity(multipartEntity);
         try {
