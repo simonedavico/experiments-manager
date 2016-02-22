@@ -67,7 +67,7 @@ public class RunBenchmarkResource {
         } catch (BenchmarkNameNotFoundException e) {
             throw new NoSuchBenchmarkException(benchmarkId);
         } catch (FabanClientException | ClientException | IOException e) {
-            throw new BenchmarkRunException();
+            throw new BenchmarkRunException(e.getMessage(), e);
         }
 
     }

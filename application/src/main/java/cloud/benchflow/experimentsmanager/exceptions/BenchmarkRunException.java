@@ -9,4 +9,8 @@ import javax.ws.rs.WebApplicationException;
  */
 public class BenchmarkRunException extends WebApplicationException {
 
+    public BenchmarkRunException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
