@@ -1,8 +1,9 @@
-package cloud.benchflow.experimentsmanager.resources.faban;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
+import cloud.benchflow.experimentsmanager.db.DbUtils;
 import cloud.benchflow.experimentsmanager.exceptions.FabanException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchRunIdException;
-import cloud.benchflow.experimentsmanager.responses.faban.RunStatusResponse;
+import cloud.benchflow.experimentsmanager.responses.lifecycle.RunStatusResponse;
 
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
@@ -28,24 +29,30 @@ import com.google.inject.name.Named;
 public class StatusBenchmarkResource {
 
     private FabanClient fabanClient;
+    private DbUtils db;
 
     @Inject
-    public StatusBenchmarkResource(@Named("faban") FabanClient fabanClient) {
+    public StatusBenchmarkResource(@Named("faban") FabanClient fabanClient,
+                                   @Named("db")DbUtils db) {
         this.fabanClient = fabanClient;
+        this.db = db;
     }
 
-    @Path("/{runId}")
+    @Path("{benchmarkName}/{experimentNumber}/{trialNumber}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public RunStatusResponse getRunStatus(@PathParam("runId") String runId) {
+    public RunStatusResponse getRunStatus(@PathParam("benchmarkName") String benchmarkName,
+                                          @PathParam("experimentNumber") long experimentNumber,
+                                          @PathParam("trialNumber") int trialNumber) {
 
         try {
 
-            RunStatus status = fabanClient.status(new RunId(runId));
+            String fabanRunId = db.getFabanRunId("Simone", benchmarkName, experimentNumber, trialNumber);
+            RunStatus status = fabanClient.status(new RunId(fabanRunId));
             return new RunStatusResponse(status.getStatus().toString());
 
         } catch (RunIdNotFoundException e) {
-            throw new NoSuchRunIdException("No run scheduled for id " + runId + ".");
+            throw new NoSuchRunIdException("No run scheduled for id.");
         } catch (FabanClientException e) {
             throw new FabanException(e);
         }

@@ -1,9 +1,9 @@
-package cloud.benchflow.experimentsmanager.resources.faban;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
 import cloud.benchflow.experimentsmanager.exceptions.UndeployableDriverException;
-import cloud.benchflow.experimentsmanager.responses.faban.DeployStatusResponse;
+import cloud.benchflow.experimentsmanager.responses.lifecycle.DeployStatusResponse;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;

@@ -1,8 +1,11 @@
-package cloud.benchflow.experimentsmanager.resources.faban;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
+import cloud.benchflow.experimentsmanager.db.DbUtils;
+import cloud.benchflow.experimentsmanager.db.entities.Experiment;
+import cloud.benchflow.experimentsmanager.db.entities.Trial;
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkRunException;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchBenchmarkException;
-import cloud.benchflow.experimentsmanager.responses.faban.RunIdResponse;
+import cloud.benchflow.experimentsmanager.responses.lifecycle.TrialIdResponse;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
 import cloud.benchflow.experimentsmanager.utils.MinioHandler;
 
@@ -36,36 +39,52 @@ public class RunBenchmarkResource {
     private final MinioHandler mh;
     private final DriversMaker dm;
     private final FabanClient fc;
+    private final DbUtils db;
 
     @Inject
     public RunBenchmarkResource(@Named("minio") final MinioHandler mh,
                                 @Named("drivers.maker") final DriversMaker  dm,
-                                @Named("faban") final FabanClient fc) {
+                                @Named("faban") final FabanClient fc,
+                                @Named("db") final DbUtils db) {
         this.mh = mh;
         this.dm = dm;
         this.fc = fc;
+        this.db = db;
     }
 
     @POST
-    @Path("{benchmarkId}")
+    @Path("{benchmarkName}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public RunIdResponse runBenchmark(@PathParam("benchmarkId") String benchmarkId,
-                                 @DefaultValue("null") @FormDataParam("benchflow-benchmark") InputStream configInputStream,
-                                 @DefaultValue("null") @FormDataParam("benchflow-benchmark") FormDataContentDisposition configDetail) {
+    public TrialIdResponse runBenchmark(@PathParam("benchmarkName") String benchmarkName,
+                                        @DefaultValue("null") @FormDataParam("benchflow-benchmark") InputStream configInputStream,
+                                        @DefaultValue("null") @FormDataParam("benchflow-benchmark") FormDataContentDisposition configDetail) {
 
         try {
             if(configInputStream == null) {
                 //retrieve it from minio
-                configInputStream = mh.getConfig(benchmarkId);
+                configInputStream = mh.getConfig(benchmarkName);
             }
             InputStream converted = dm.convert(configInputStream);
-            RunId rs = fc.submit(benchmarkId, benchmarkId, converted);
 
-            return new RunIdResponse(rs.toString());
-//            return converted;
+            //create the experiment
+            Experiment e = new Experiment(benchmarkName);
+            RunId rs = fc.submit(benchmarkName, benchmarkName, converted);
+
+            //for now, we only have one trial
+            Trial t = new Trial(1);
+            t.setFabanRunId(rs.toString());
+            e.addTrial(t);
+
+            //save the experiment in the database
+            db.saveExperiment(e);
+
+            //return the id for the trial
+            return new TrialIdResponse(t.getExperiment().getBenchmarkName(),
+                                       t.getExperiment().getExperimentNumber(),
+                                       t.getTrialNumber());
         } catch (BenchmarkNameNotFoundException e) {
-            throw new NoSuchBenchmarkException(benchmarkId);
+            throw new NoSuchBenchmarkException(benchmarkName);
         } catch (FabanClientException | ClientException | IOException e) {
             throw new BenchmarkRunException(e.getMessage(), e);
         }

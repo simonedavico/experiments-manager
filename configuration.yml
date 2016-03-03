@@ -12,6 +12,15 @@ faban:
   password: ${env.FABAN_PASSWORD!""}
   address: ${env.FABAN_ADDRESS}
 
+db:
+  user: ${env.DB_USER!"root"}
+  password: ${env.DB_PASSWORD!""}
+  name: ${env.DB_NAME!"provahibernate"}
+  host: ${env.DB_HOST!"localhost"}
+  port: ${env.DB_PORT!"13000"}
+
+mock: false
+
 server:
   type: default
   applicationConnectors:

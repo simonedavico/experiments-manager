@@ -26,6 +26,21 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty
     private HttpClientConfiguration httpClient = new HttpClientConfiguration();
 
+    @Valid
+    @NotNull
+    @JsonProperty
+    private DbConfiguration dbConfiguration = new DbConfiguration();
+
+    @Valid
+    @NotNull
+    private boolean mock;
+
+    @JsonProperty("mock")
+    public boolean useMock() { return mock; }
+
+    @JsonProperty("mock")
+    public void setMock(boolean mock) { this.mock = mock; }
+
     public HttpClientConfiguration getHttpClientConfiguration() {
         return httpClient;
     }
@@ -59,5 +74,15 @@ public class ExperimentsManagerConfiguration extends Configuration {
 	public void setFabanConfiguration(FabanConfiguration fabanConfiguration) {
 		this.fabanConfiguration = fabanConfiguration;
 	}
+
+    @JsonProperty("database")
+    public DbConfiguration getDbConfiguration() {
+        return dbConfiguration;
+    }
+
+    @JsonProperty("database")
+    public void setDbConfiguration(DbConfiguration dbConfiguration) {
+        this.dbConfiguration = dbConfiguration;
+    }
 
 }

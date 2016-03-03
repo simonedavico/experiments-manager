@@ -13,7 +13,11 @@
         <minio.version>0.2.6</minio.version>
         <faban.client.version>0.1.0</faban.client.version>
         <snakeyaml.version>1.16</snakeyaml.version>
+		<hibernate.version>5.0.7.Final</hibernate.version>
+		<mysql.connector.version>5.1.38</mysql.connector.version>
 	</properties>
+
+
 	<dependencies>
 
         <dependency>
@@ -21,12 +25,6 @@
 			<artifactId>dropwizard-jersey</artifactId>
 			<version>${dropwizard.version}</version>
 		</dependency>
-
-        <!--<dependency>-->
-			<!--<groupId>org.glassfish.jersey.media</groupId>-->
-			<!--<artifactId>jersey-media-multipart</artifactId>-->
-			<!--<version>${jersey.multipart.version}</version>-->
-		<!--</dependency>-->
 
         <dependency>
 			<groupId>io.dropwizard</groupId>
@@ -59,18 +57,33 @@
             <version>${snakeyaml.version}</version>
         </dependency>
 
-	</dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-java8</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.version}</version>
+        </dependency>
+
+    </dependencies>
+
 	<repositories>
 		<repository>
 		    <id>jitpack.io</id>
 		    <url>https://jitpack.io</url>
 		</repository>
-        <!--<repository>-->
-            <!--<id>Sonatype-public</id>-->
-            <!--<name>SnakeYAML repository</name>-->
-            <!--<url>http://oss.sonatype.org/content/groups/public/</url>-->
-        <!--</repository>-->
 	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
