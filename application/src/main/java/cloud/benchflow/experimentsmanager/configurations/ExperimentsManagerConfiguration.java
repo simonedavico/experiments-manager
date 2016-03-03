@@ -31,16 +31,6 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty
     private DbConfiguration dbConfiguration = new DbConfiguration();
 
-    @Valid
-    @NotNull
-    private boolean mock;
-
-    @JsonProperty("mock")
-    public boolean useMock() { return mock; }
-
-    @JsonProperty("mock")
-    public void setMock(boolean mock) { this.mock = mock; }
-
     public HttpClientConfiguration getHttpClientConfiguration() {
         return httpClient;
     }

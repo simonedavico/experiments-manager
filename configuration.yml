@@ -19,8 +19,6 @@ db:
   host: ${env.DB_HOST!"localhost"}
   port: ${env.DB_PORT!"13000"}
 
-mock: false
-
 server:
   type: default
   applicationConnectors:
