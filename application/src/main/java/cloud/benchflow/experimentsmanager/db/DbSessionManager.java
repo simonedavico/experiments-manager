@@ -1,6 +1,5 @@
 package cloud.benchflow.experimentsmanager.db;
 
-import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -13,26 +12,26 @@ import java.util.List;
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
  *
- * Created on 29/01/16.
+ * Created on 07/03/16.
  */
-public class DbUtils {
+public class DbSessionManager {
 
     private SessionFactory sessionFactory;
 
-    public DbUtils(String url, int port, String dbName, String username) {
+    public DbSessionManager(String url, int port, String dbName, String username) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
-               .applySetting("hibernate.connection.url", "jdbc:mysql://" + url + ":" +
-                              port + "/" + dbName + "?createDatabaseIfNotExist=true")
-               .applySetting("hibernate.connection.username", username)
-               .applySetting("hibernate.connection.password", "");
+                .applySetting("hibernate.connection.url", "jdbc:mysql://" + url + ":" +
+                        port + "/" + dbName + "?createDatabaseIfNotExist=true")
+                .applySetting("hibernate.connection.username", username)
+                .applySetting("hibernate.connection.password", "");
 
         final StandardServiceRegistry registry = builder.build();
         try {
 
             this.sessionFactory = new MetadataSources(registry)
-                                      .buildMetadata()
-                                      .buildSessionFactory();
+                    .buildMetadata()
+                    .buildSessionFactory();
 
             checkDatabaseSchema();
 
@@ -66,6 +65,7 @@ public class DbUtils {
                 "EXP_NUMBER bigint not null, " +
                 "TRIAL_NUMBER integer not null, " +
                 "FABAN_RUN_ID varchar(255), " +
+                "PERFORMED_ON timestamp, " +
                 "primary key (USERNAME, BENCHMARK_NAME, EXP_NUMBER, TRIAL_NUMBER))";
 
         //check for existence of tables EXPERIMENTS and TRIALS
@@ -85,51 +85,8 @@ public class DbUtils {
         session.close();
     }
 
-    /***
-     *
-     * @param e the experiment to be persisted
-     */
-    public void saveExperiment(Experiment e) {
-        Session s = this.sessionFactory.openSession();
-        s.beginTransaction();
-        s.save(e);
-        s.getTransaction().commit();
-        s.close();
-    }
-
-    /***
-     *
-     * @param username
-     * @param benchmarkName
-     * @param experimentNumber
-     * @param trialNumber
-     * @return
-     */
-    public String getFabanRunId(String username, String benchmarkName, long experimentNumber, int trialNumber) {
-        Session s = this.sessionFactory.openSession();
-        s.beginTransaction();
-
-        String query = "select t.fabanRunId from Trial t where " +
-                       "t.experiment.username = :uname and " +
-                       "t.experiment.benchmarkName = :bname and " +
-                       "t.experiment.experimentNumber = :expNum and " +
-                       "t.trialNumber = :trialNum";
-
-        String fabanRunId = (String) s.createQuery(query)
-                                      .setParameter("uname", username)
-                                      .setParameter("bname", benchmarkName)
-                                      .setParameter("expNum", experimentNumber)
-                                      .setParameter("trialNum", trialNumber)
-                                      .uniqueResult();
-
-        s.getTransaction().commit();
-        s.close();
-        return fabanRunId;
-    }
-
-    //TODO: remove this
-    public SessionFactory getSession() {
-        return this.sessionFactory;
+    public DbSession getSession() {
+        return new DbSession(this.sessionFactory);
     }
 
 }

@@ -2,7 +2,7 @@ package cloud.benchflow.experimentsmanager.modules;
 
 import cloud.benchflow.experimentsmanager.configurations.DbConfiguration;
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
-import cloud.benchflow.experimentsmanager.db.DbUtils;
+import cloud.benchflow.experimentsmanager.db.DbSessionManager;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -17,14 +17,14 @@ import io.dropwizard.setup.Environment;
 public class DbModule extends AbstractModule {
 
     @Override
-    protected void configure() {
-
-    }
+    protected void configure() {}
 
     @Provides @Singleton @Named("db")
-    public DbUtils provideDb(ExperimentsManagerConfiguration config, Environment environment) {
+    public DbSessionManager provideDb(ExperimentsManagerConfiguration config, Environment env) {
         DbConfiguration dbConfig = config.getDbConfiguration();
-        return new DbUtils(dbConfig.getHost(), dbConfig.getPort(), dbConfig.getName(), dbConfig.getUser());
+        DbSessionManager sessionFactory = new DbSessionManager(dbConfig.getHost(), dbConfig.getPort(),
+                                                               dbConfig.getName(), dbConfig.getUser());
+        return sessionFactory;
     }
 
 }

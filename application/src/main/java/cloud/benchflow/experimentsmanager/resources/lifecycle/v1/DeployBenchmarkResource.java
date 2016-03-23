@@ -1,10 +1,11 @@
-package cloud.benchflow.experimentsmanager.resources.lifecycle;
+package cloud.benchflow.experimentsmanager.resources.lifecycle.v1;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.exceptions.NoDriversException;
 import cloud.benchflow.experimentsmanager.exceptions.UndeployableDriverException;
 import cloud.benchflow.experimentsmanager.responses.lifecycle.DeployStatusResponse;
-import cloud.benchflow.experimentsmanager.utils.MinioHandler;
+import cloud.benchflow.experimentsmanager.utils.minio.v1.MinioHandler;
+import cloud.benchflow.experimentsmanager.utils.minio.v2.BenchFlowMinioClientException;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.responses.DeployStatus;
@@ -13,7 +14,6 @@ import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.minio.errors.ClientException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.yaml.snakeyaml.Yaml;
@@ -55,14 +55,14 @@ public class DeployBenchmarkResource {
     private final FabanClient fc;
 
     @Inject
-    public DeployBenchmarkResource(@Named("faban") FabanClient fc, @Named("minio") MinioHandler mh) {
+    public DeployBenchmarkResource(@Named("faban") FabanClient fc, @Named("minio.v1") MinioHandler mh) {
         this.fc = fc;
         this.mh = mh;
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/vnd.experiments-manager.v1+json")
     public DeployStatusResponse deployBenchmark(@FormDataParam("benchmark") InputStream benchmarkInputStream,
                                                 @FormDataParam("benchmark") FormDataContentDisposition benchmarkDetail) throws IOException {
 
@@ -77,11 +77,11 @@ public class DeployBenchmarkResource {
         try(ZipInputStream zin = new ZipInputStream(in)) {
             DeployStatus status = null;
             while((entry = zin.getNextEntry()) != null) {
-                if(BenchFlowArchiveUtils.isDriver.test(entry)) {
+                if(BenchmarkArchiveUtils.isDriver.test(entry)) {
                     driversCount++;
 //                    String driverName = entry.getName()
 //                                             .substring(entry.getName().lastIndexOf("/")+1);
-                    String driverName = BenchFlowArchiveUtils.getEntryFileName.apply(entry);
+                    String driverName = BenchmarkArchiveUtils.getEntryFileName.apply(entry);
                     status = fc.deploy(zin, driverName);
 
                     if(status.getCode() != DeployStatus.Code.CREATED) {
@@ -90,9 +90,9 @@ public class DeployBenchmarkResource {
                                 " a status of " + status.getCode().toString());
                     }
 
-                } else if(BenchFlowArchiveUtils.isBenchFlowConfigFile.test(entry)) {
+                } else if(BenchmarkArchiveUtils.isBenchFlowConfigFile.test(entry)) {
                     byte[] cachedConfiguration = ByteStreams.toByteArray(zin);
-                    String configFileName = BenchFlowArchiveUtils.getEntryFileName.apply(entry);
+                    String configFileName = BenchmarkArchiveUtils.getEntryFileName.apply(entry);
                     mh.storeConfig(benchmarkFileNameNoExt, configFileName, cachedConfiguration);
                     Map parsed = (Map) new Yaml().load(new ByteArrayInputStream(cachedConfiguration));
                     //TODO: save on minio
@@ -104,18 +104,16 @@ public class DeployBenchmarkResource {
 
             return new DeployStatusResponse(status.getCode().toString());
 
-        } catch (FabanClientException | IOException | ClientException e) {
+        } catch (FabanClientException | IOException | BenchFlowMinioClientException e) {
             throw new BenchmarkDeployException("An unknown error occurred while processing your request.", e);
         }
     }
 
     /***
-     *
-     * Collection of static utility functions/predicate
-     * to analyse the archive sent to the experiments-manager
-     *
+     *  Collection of static utility functions/predicate
+     *  to analyse the archive sent to the experiments-manager
      */
-    private static class BenchFlowArchiveUtils {
+    private static class BenchmarkArchiveUtils {
 
         private static BiPredicate<ZipEntry, String> isConfigFile = (e,s) -> e.getName().endsWith(s);
         private static Predicate<ZipEntry> isBenchflowBenchmarkConfig = e -> isConfigFile.test(e, "benchflow-benchmark.yml");

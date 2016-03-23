@@ -17,6 +17,8 @@ import java.sql.SQLException;
  * Created on 03/02/16.
  */
 public class ExperimentNumberGenerator implements IdentifierGenerator {
+
+    //TODO: make this synchronized?
     @Override
     public Serializable generate(SessionImplementor session, Object o) throws HibernateException {
 

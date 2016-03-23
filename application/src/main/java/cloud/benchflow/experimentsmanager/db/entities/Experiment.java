@@ -18,14 +18,15 @@ import java.util.Set;
 @Entity
 @Table(name = "EXPERIMENTS")
 @IdClass(Experiment.ExperimentId.class)
+//@SQLInsert(sql="insert into EXPERIMENTS (PERFORMED_ON, BENCHMARK_NAME, EXP_NUMBER, USERNAME) values ()")
 public class Experiment {
 
     Experiment() {}
 
-    public Experiment(String benchmarkName) {
+    public Experiment(String user, String benchmarkName) {
         this.benchmarkName = benchmarkName;
         this.performedOn = LocalDateTime.now();
-        this.username = "Simone";
+        this.username = user;
     }
 
     @Embeddable
@@ -81,8 +82,8 @@ public class Experiment {
     @Column(name = "PERFORMED_ON")
     private LocalDateTime performedOn;
 
-    @Formula("concat(USERNAME, '.', BENCHMARK_NAME, '.', EXP_NUMBER)")
-    private String experimentId;
+//    @Formula("concat(USERNAME, '.', BENCHMARK_NAME, '.', EXP_NUMBER)")
+//    private String experimentId;
 
     public String getBenchmarkName() {
         return benchmarkName;
@@ -130,11 +131,11 @@ public class Experiment {
     }
 
     public String getExperimentId() {
-        return experimentId;
+        return username + "." + benchmarkName + "." + experimentNumber;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
-    }
+//    public void setExperimentId(String experimentId) {
+//        this.experimentId = experimentId;
+//    }
 
 }
