@@ -61,9 +61,9 @@ public class DriversMaker {
 
     }
 
-    public void makeDriver(String benchmarkName, long experimentNumber, int trials) {
+    public void generateDriver(String benchmarkName, long experimentNumber, int trials) {
 
-        HttpPost post = new HttpPost(address + "/makedriver");
+        HttpPost post = new HttpPost(address + "/generatedriver");
 
         MakeDriverRequestBody body = new MakeDriverRequestBody();
         body.setBenchmarkName(benchmarkName);

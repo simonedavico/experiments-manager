@@ -88,7 +88,7 @@ public class RunBenchmarkResource {
 
             //ask drivers-maker to generate the packet
             try {
-                driversMaker.makeDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
+                driversMaker.generateDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
             } catch (BenchmarkGenerationException e) {
                 dbSession.rollback();
                 throw new BenchmarkRunException(e.getMessage(), e);
