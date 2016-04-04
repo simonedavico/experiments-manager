@@ -1,5 +1,7 @@
 package cloud.benchflow.experimentsmanager.db;
 
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -7,6 +9,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -46,27 +50,19 @@ public class DbSessionManager {
      * Checks existence of expected tables, and creates them if they
      * don't exist
      */
-    private void checkDatabaseSchema() {
+    private void checkDatabaseSchema() throws IOException {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
+        java.nio.file.Path createExperimentsTableQuery =
+                Paths.get("./application/src/main/resources/db/create-experiments-table.txt");
         final String createExperimentsTable =
-                "create table EXPERIMENTS " +
-                "(USERNAME varchar(255) not null, " +
-                "BENCHMARK_NAME varchar(255) not null, " +
-                "EXP_NUMBER bigint not null, " +
-                "PERFORMED_ON timestamp,  " +
-                "primary key(USERNAME, BENCHMARK_NAME, EXP_NUMBER));";
+                FileUtils.readFileToString(createExperimentsTableQuery.toFile(), Charsets.UTF_8);
 
+        java.nio.file.Path createTrialsTableQuery =
+                Paths.get("./application/src/main/resources/db/create-trials-table.txt");
         final String createTrialsTable =
-                "create table TRIALS " +
-                "(USERNAME varchar(255) not null, " +
-                "BENCHMARK_NAME varchar(255) not null, " +
-                "EXP_NUMBER bigint not null, " +
-                "TRIAL_NUMBER integer not null, " +
-                "FABAN_RUN_ID varchar(255), " +
-                "PERFORMED_ON timestamp, " +
-                "primary key (USERNAME, BENCHMARK_NAME, EXP_NUMBER, TRIAL_NUMBER))";
+                FileUtils.readFileToString(createTrialsTableQuery.toFile(), Charsets.UTF_8);
 
         //check for existence of tables EXPERIMENTS and TRIALS
         final String checkExists = "show tables like :tableName";

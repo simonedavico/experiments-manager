@@ -45,9 +45,11 @@ public class StatusBenchmarkResource {
                                           @PathParam("experimentNumber") long experimentNumber,
                                           @PathParam("trialNumber") int trialNumber) {
 
+        String userId = "BenchFlow";
+
         try {
 
-            String fabanRunId = db.getFabanRunId("Simone", benchmarkName, experimentNumber, trialNumber);
+            String fabanRunId = db.getFabanRunId(userId, benchmarkName, experimentNumber, trialNumber);
             RunStatus status = fabanClient.status(new RunId(fabanRunId));
             return new RunStatusResponse(status.getStatus().toString());
 

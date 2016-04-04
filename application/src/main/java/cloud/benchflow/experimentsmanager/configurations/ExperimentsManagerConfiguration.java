@@ -36,12 +36,12 @@ public class ExperimentsManagerConfiguration extends Configuration {
 //        return httpClient;
 //    }
 
-    @JsonProperty("drivers.maker")
+    @JsonProperty("drivers-maker")
     public DriversMakerConfiguration getDriversMakerConfiguration() {
         return driversMakerConfiguration;
     }
 
-    @JsonProperty("drivers.maker")
+    @JsonProperty("drivers-maker")
     public void setDriversMakerConfiguration(DriversMakerConfiguration driversMakerConfiguration) {
         this.driversMakerConfiguration = driversMakerConfiguration;
     }

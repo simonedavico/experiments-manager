@@ -151,7 +151,7 @@ public class BenchFlowMinioClient {
      * Returns the deployment descriptor for a trial,
      * from benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/docker-compose.yml
      */
-    public String getDeploymentDescriptor(final String benchmarkId, final int experimentNumber, final int trialNumber) {
+    public String getDeploymentDescriptor(final String benchmarkId, final long experimentNumber, final int trialNumber) {
         return getTextFile(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/docker-compose.yml");
     }
 
@@ -159,7 +159,7 @@ public class BenchFlowMinioClient {
      * Saves the deployment descriptor generated for a trial at
      * benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/docker-compose.yml
      */
-    public void saveDeploymentDescriptor(final String benchmarkId, final int experimentNumber,
+    public void saveDeploymentDescriptor(final String benchmarkId, final long experimentNumber,
                                          final int trialNumber, final String descriptor) {
         String id = benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/docker-compose.yml";
         saveTextFile(descriptor, id);
@@ -178,7 +178,7 @@ public class BenchFlowMinioClient {
      * Returns the configuration for an experiment,
      * from benchmarks/{benchmarkId}/{experimentNumber}/benchflow-benchmark.yml
      */
-    public String getBenchFlowBenchmark(final String benchmarkId, final int experimentNumber) {
+    public String getBenchFlowBenchmark(final String benchmarkId, final long experimentNumber) {
         return getTextFile(benchmarkId + "/" + experimentNumber + "/benchflow-benchmark.yml");
     }
 
@@ -186,7 +186,7 @@ public class BenchFlowMinioClient {
      * Saves the generated Faban configuration for a trial,
      * at benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/run.xml
      */
-    public void saveFabanConfiguration(final String benchmarkId, final int experimentNumber,
+    public void saveFabanConfiguration(final String benchmarkId, final long experimentNumber,
                                        final int trialNumber, final String configuration) {
         String id = benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/run.xml";
         saveTextFile(configuration, id);
@@ -196,7 +196,7 @@ public class BenchFlowMinioClient {
      * Returns the Faban configuration for a trial,
      * from benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/run.xml
      */
-    public String getFabanConfiguration(final String benchmarkId, final int experimentNumber, final int trialNumber) {
+    public String getFabanConfiguration(final String benchmarkId, final long experimentNumber, final int trialNumber) {
         return getTextFile(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/run.xml");
     }
 
@@ -220,7 +220,7 @@ public class BenchFlowMinioClient {
      * Returns the driver generated for an experiment,
      * from benchmarks/{benchmarkId}/{experimentNumber}/driver.jar
      */
-    public InputStream getGeneratedDriver(final String benchmarkId, final int experimentNumber) {
+    public InputStream getGeneratedDriver(final String benchmarkId, final long experimentNumber) {
         return getFile(benchmarkId + "/" + experimentNumber + "/driver.jar");
     }
 
@@ -228,7 +228,7 @@ public class BenchFlowMinioClient {
      * Saves generated driver for an experiment,
      * at benchmarks/{benchmarkId}/{experimentNumber}/driver.jar
      */
-    public void saveGeneratedDriver(final String benchmarkId, final int experimentNUmber, final String driverPath) {
+    public void saveGeneratedDriver(final String benchmarkId, final long experimentNUmber, final String driverPath) {
         try {
             mc.putObject(BENCHMARKS_BUCKET, benchmarkId + "/" + experimentNUmber + "/driver.jar", driverPath);
         } catch (MinioException | NoSuchAlgorithmException | InvalidKeyException | IOException | XmlPullParserException e) {

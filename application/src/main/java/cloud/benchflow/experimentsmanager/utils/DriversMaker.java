@@ -49,7 +49,7 @@ public class DriversMaker {
                 .addBinaryBody("benchflow-benchmark",
                                benchflowConfig,
                                ContentType.create("text/yaml", Consts.UTF_8),
-                               "benchflow-config.yml")
+                               "benchflow-benchmark.yml")
                 .build();
         post.setEntity(multipartEntity);
         try {

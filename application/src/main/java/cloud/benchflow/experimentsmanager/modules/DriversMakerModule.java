@@ -25,7 +25,7 @@ public class DriversMakerModule extends AbstractModule {
     }
 
     @Provides
-    @Named("drivers.maker")
+    @Named("drivers-maker")
     @Inject
     public DriversMaker provideDriversMaker(/*@Named("http") HttpClient httpClient,*/
                                             ExperimentsManagerConfiguration config,

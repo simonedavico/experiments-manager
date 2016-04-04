@@ -43,7 +43,7 @@ public class RunBenchmarkResource {
 
     @Inject
     public RunBenchmarkResource(@Named("minio.v1") final MinioHandler mh,
-                                @Named("drivers.maker") final DriversMaker  dm,
+                                @Named("drivers-maker") final DriversMaker  dm,
                                 @Named("faban") final FabanClient fc,
                                 @Named("db") final DbSessionManager db) {
         this.mh = mh;

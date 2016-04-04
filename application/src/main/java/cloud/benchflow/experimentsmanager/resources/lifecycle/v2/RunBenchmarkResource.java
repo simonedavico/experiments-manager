@@ -43,12 +43,14 @@ public class RunBenchmarkResource {
     private FabanClient faban;
     private DriversMaker driversMaker;
     private ExecutorService threadPool;
+    private Integer submitRetries;
 
     @Inject
     public RunBenchmarkResource(@Named("minio.v2") BenchFlowMinioClient minio,
                                 @Named("db") DbSessionManager db,
                                 @Named("faban") FabanClient faban,
-                                @Named("drivers.maker") DriversMaker driversMaker,
+                                @Named("retries") Integer submitRetries,
+                                @Named("drivers-maker") DriversMaker driversMaker,
                                 @Named("executorService") ExecutorService threadPool) {
         this.minio = minio;
         this.db = db;
@@ -94,7 +96,7 @@ public class RunBenchmarkResource {
 
             logger.debug("Generated Faban driver");
 
-            int experimentNumber = java.lang.Math.toIntExact(experiment.getExperimentNumber());
+            long experimentNumber = experiment.getExperimentNumber();
 
             //get the packet from minio
             InputStream driver = minio.getGeneratedDriver(benchmarkId, experimentNumber);
@@ -115,7 +117,7 @@ public class RunBenchmarkResource {
             //make concurrent run requests to faban
             for (Trial t : experiment.getTrials()) {
                 cs.submit(() -> {
-                    int retries = 5;
+                    int retries = submitRetries;
                     String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
 
                     RunId runId;
