@@ -20,10 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -37,12 +34,14 @@ import java.util.concurrent.*;
 @Path("run")
 public class RunBenchmarkResource {
 
+
     private BenchFlowMinioClient minio;
     private Logger logger;
     private DbSessionManager db;
     private FabanClient faban;
     private DriversMaker driversMaker;
-    private ExecutorService threadPool;
+    private ExecutorService runBenchmarkPool;
+    private ExecutorService submitRunsPool;
     private Integer submitRetries;
 
     @Inject
@@ -51,13 +50,146 @@ public class RunBenchmarkResource {
                                 @Named("faban") FabanClient faban,
                                 @Named("retries") Integer submitRetries,
                                 @Named("drivers-maker") DriversMaker driversMaker,
-                                @Named("executorService") ExecutorService threadPool) {
+                                @Named("runBenchmarkExecutorService") ExecutorService runBenchmarkPool,
+                                @Named("submitRunsPool") ExecutorService submitRunsPool) {
         this.minio = minio;
         this.db = db;
         this.faban = faban;
         this.driversMaker = driversMaker;
-        this.threadPool = threadPool;
+        this.runBenchmarkPool = runBenchmarkPool;
         this.logger = LoggerFactory.getLogger(this.getClass().getName());
+        this.submitRetries = submitRetries;
+        this.submitRunsPool = submitRunsPool;
+    }
+
+
+    private class AsyncExperimentRun implements Runnable {
+
+        private Experiment experiment;
+        private DbSession dbSession;
+
+        public AsyncExperimentRun(Experiment experiment, DbSession dbSession) {
+            this.experiment = experiment;
+            this.dbSession = dbSession;
+        }
+
+        @Override
+        public void run() {
+
+            try {
+                String benchmarkName = experiment.getBenchmarkName();
+                String benchmarkId = experiment.getUsername() + "." + benchmarkName;
+                String minioBenchmarkId = experiment.getUsername() + "/" + benchmarkName;
+                long experimentNumber = experiment.getExperimentNumber();
+
+                driversMaker.generateDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
+                logger.debug("Generated Faban driver");
+
+                InputStream driver = minio.getGeneratedDriver(minioBenchmarkId, experimentNumber);
+
+                faban.deploy(driver, experiment.getExperimentId());
+                logger.debug("Driver successfully deployed");
+
+                //experiment.status = RUNNING
+
+                //send the runs to faban
+                CompletionService<Trial> cs = new ExecutorCompletionService<>(submitRunsPool);
+
+                //make concurrent run requests to faban
+                for (Trial t : experiment.getTrials()) {
+
+                    //trial.status = QUEUED
+
+                    cs.submit(() -> {
+                        int retries = submitRetries;
+                        String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
+
+                        RunId runId;
+                        while (true) {
+                            try {
+                                runId = faban.submit(experiment.getExperimentId(), experiment.getExperimentId(),
+                                        IOUtils.toInputStream(config, Charsets.UTF_8));
+                                break;
+                            } catch (FabanClientException e) {
+                                if (retries > 0) retries--;
+                                else {
+                                    throw e;
+                                }
+                            }
+                        }
+
+                        t.setFabanRunId(runId.toString());
+                        return t;
+                    });
+                }
+
+                int received = 0;
+                while (received < experiment.getTrials().size()) {
+
+                    Future<Trial> updatedTrialResponse = cs.take();
+                    Trial updatedTrial = updatedTrialResponse.get();
+
+                    //trial.status = SUBMITTED
+                    updatedTrial.setSubmitted();
+
+                    dbSession.update(updatedTrial);
+
+                    logger.debug("Received trial " + updatedTrial.getTrialNumber() +
+                            "with run ID: " + updatedTrial.getFabanRunId());
+
+                    received++;
+
+                }
+
+                //update the trials
+                //dbSession.updateTrials(experiment.getTrials());
+
+            } catch(Exception e) {
+                dbSession.rollback();
+                throw new BenchmarkRunException(e.getMessage(), e);
+            } finally {
+                dbSession.close();
+            }
+        }
+    }
+
+    @POST
+    @Path("{benchmarkName}")
+    @Produces("application/vnd.experiments-manager.v2+json")
+    public String runAsync(@PathParam("benchmarkName") String benchmarkName) {
+
+        String user = "BenchFlow";
+        String benchmarkId = user + "." + benchmarkName;
+        String minioBenchmarkId = user + "/" + benchmarkName;
+        Experiment experiment;
+        //experiment.status = GENERATING
+
+        DbSession dbSession = db.getSession();
+        String dd = minio.getOriginalDeploymentDescriptor(minioBenchmarkId);
+
+        Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(dd);
+        int trials = Integer.valueOf((String) parsedDD.get("trials"));
+
+        logger.debug("Retrieved number of trials for benchmark " + benchmarkId + ": " + trials);
+
+        experiment = new Experiment(user, benchmarkName);
+        for (int i = 1; i <= trials; i++) {
+            Trial trial = new Trial(i);
+            experiment.addTrial(trial);
+        }
+
+        dbSession.saveExperiment(experiment);
+        logger.debug("Saved experiment");
+
+        try {
+           runBenchmarkPool.submit(new AsyncExperimentRun(experiment, dbSession));
+        } catch(Exception e) {
+            dbSession.rollback();
+            throw new WebApplicationException(e.getMessage(), e);
+        }
+
+        //TODO: chose more appropriate response (e.g, experimentId + totalTrials)
+        return experiment.getExperimentId();
     }
 
     @POST
@@ -112,7 +244,7 @@ public class RunBenchmarkResource {
             logger.debug("Driver successfully deployed");
 
             //send the runs to faban
-            CompletionService<Trial> cs = new ExecutorCompletionService<>(threadPool);
+            CompletionService<Trial> cs = new ExecutorCompletionService<>(runBenchmarkPool);
 
             //make concurrent run requests to faban
             for (Trial t : experiment.getTrials()) {
@@ -169,6 +301,7 @@ public class RunBenchmarkResource {
             //decide what to do here
         }
 
+        //TODO: return the experiment id here
         return new DeployStatusResponse("Deployed");
     }
 

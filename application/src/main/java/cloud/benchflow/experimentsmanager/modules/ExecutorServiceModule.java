@@ -41,11 +41,11 @@ public class ExecutorServiceModule extends AbstractModule {
     }
 
     @Provides @Singleton
-    @Named("executorService")
-    public ExecutorService providesExecutorService(ExperimentsManagerConfiguration c, Environment env) {
+    @Named("runBenchmarkExecutorService")
+    public ExecutorService providesRunBenchmarkExecutorService(ExperimentsManagerConfiguration c, Environment env) {
         int cpus = Runtime.getRuntime().availableProcessors();
 
-        return env.lifecycle().executorService("experiments-manager-%d")
+        return env.lifecycle().executorService("run-benchmark-%d")
                        .minThreads(5 * cpus) //TODO: make base min value configurable
                        .maxThreads(15 * cpus) //TODO: make base max value configurable
                        .keepAliveTime(Duration.seconds(60))
@@ -53,18 +53,21 @@ public class ExecutorServiceModule extends AbstractModule {
                        .threadFactory(new DaemonThreadFactory())
                        .rejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy())
                        .build();
+    }
 
-//        ThreadPoolExecutor pool = new ThreadPoolExecutor(
-//                                                         5 * cpus, /* core size */
-//                                                         15 * cpus, /* max size */
-//                                                         60, TimeUnit.SECONDS, /* idle timeout */
-//                                                         new SynchronousQueue<>(),
-//                                                         new DaemonThreadFactory());
-//        pool.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-//        //shuts the executorservice down on server shutdown
-////        env.lifecycle().manage(pool);
-//
-//        return pool;
+    @Provides @Singleton
+    @Named("submitRunExecutorService")
+    public ExecutorService providesSubmitRunExecutorService(ExperimentsManagerConfiguration c, Environment env) {
+        int cpus = Runtime.getRuntime().availableProcessors();
+
+        return env.lifecycle().executorService("submit-run-%d")
+                .minThreads(5 * cpus) //TODO: make base min value configurable
+                .maxThreads(25 * cpus) //TODO: make base max value configurable
+                .keepAliveTime(Duration.seconds(60))
+                .workQueue(new SynchronousQueue<>())
+                .threadFactory(new DaemonThreadFactory())
+                .rejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy())
+                .build();
     }
 
 }

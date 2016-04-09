@@ -21,12 +21,18 @@ import java.util.Set;
 //@SQLInsert(sql="insert into EXPERIMENTS (PERFORMED_ON, BENCHMARK_NAME, EXP_NUMBER, USERNAME) values ()")
 public class Experiment {
 
+    //TODO: maybe only RUNNING and COMPLETED are necessary?
+    private enum Status {
+        GENERATING, QUEUED, RUNNING, COMPLETED
+    }
+
     Experiment() {}
 
     public Experiment(String user, String benchmarkName) {
         this.benchmarkName = benchmarkName;
         this.performedOn = LocalDateTime.now();
         this.username = user;
+        this.status = Status.GENERATING;
     }
 
     @Embeddable
@@ -82,6 +88,10 @@ public class Experiment {
     @Column(name = "PERFORMED_ON")
     private LocalDateTime performedOn;
 
+    @Column(name = "STATUS")
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
 //    @Formula("concat(USERNAME, '.', BENCHMARK_NAME, '.', EXP_NUMBER)")
 //    private String experimentId;
 
@@ -134,8 +144,20 @@ public class Experiment {
         return username + "." + benchmarkName + "." + experimentNumber;
     }
 
-//    public void setExperimentId(String experimentId) {
-//        this.experimentId = experimentId;
-//    }
+    public String getStatus() { return status.name(); }
+
+    public void setQueued() { status = Status.QUEUED; }
+
+    public void setRunning() { status = Status.RUNNING; }
+
+    public void setCompleted() { status = Status.COMPLETED; }
+
+    public boolean isQueued() { return status == Status.QUEUED; }
+
+    public boolean isRunning() { return status == Status.RUNNING; }
+
+    public boolean isCompleted() { return status == Status.COMPLETED; }
+
+
 
 }

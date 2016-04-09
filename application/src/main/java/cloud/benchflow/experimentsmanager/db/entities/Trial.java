@@ -1,5 +1,8 @@
 package cloud.benchflow.experimentsmanager.db.entities;
 
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.SelectBeforeUpdate;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -12,13 +15,26 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "TRIALS")
 @IdClass(Trial.TrialId.class)
+@SelectBeforeUpdate
+@DynamicUpdate
 public class Trial {
+
+    private enum Status {
+        QUEUED, SUBMITTED, COMPLETED, FAILED
+    }
 
     Trial() {}
 
     public Trial(int trialNumber) {
         this.trialNumber = trialNumber;
         this.performedOn = LocalDateTime.now();
+        this.status = Status.QUEUED;
+    }
+
+    public Trial(String userId, String benchmarkName, long experimentNumber, int trialNumber) {
+        this.experiment = new Experiment(userId, benchmarkName);
+        this.experiment.setExperimentNumber(experimentNumber);
+        this.trialNumber = trialNumber;
     }
 
     @Embeddable
@@ -64,6 +80,10 @@ public class Trial {
     @Column(name = "PERFORMED_ON")
     private LocalDateTime performedOn;
 
+    @Column(name = "STATUS")
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     public Experiment getExperiment() {
         return experiment;
     }
@@ -88,6 +108,8 @@ public class Trial {
         this.fabanRunId = fabanRunId;
     }
 
+    public String getTrialId() { return experiment.getExperimentId() + "." + trialNumber; }
+
     public LocalDateTime getPerformedOn() {
         return performedOn;
     }
@@ -95,5 +117,21 @@ public class Trial {
     public void setPerformedOn(LocalDateTime performedOn) {
         this.performedOn = performedOn;
     }
+
+    public String getStatus() { return status.name(); }
+
+    public void setSubmitted() { this.status = Status.SUBMITTED; }
+
+    public void setCompleted() { this.status = Status.COMPLETED; }
+
+    public void setFailed() { this.status = Status.FAILED; }
+
+    public boolean isQueued() { return status == Status.QUEUED; }
+
+    public boolean isSubmitted() { return status == Status.SUBMITTED; }
+
+    public boolean isCompleted() { return status == Status.COMPLETED; }
+
+    public boolean isFailed() { return status == Status.FAILED; }
 
 }

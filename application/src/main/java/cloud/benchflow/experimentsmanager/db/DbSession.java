@@ -2,14 +2,10 @@ package cloud.benchflow.experimentsmanager.db;
 
 import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import cloud.benchflow.experimentsmanager.db.entities.Trial;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,26 +19,17 @@ public class DbSession implements AutoCloseable {
 
     public DbSession(SessionFactory sessionFactory) {
         this.session = sessionFactory.openSession();
+        session.setFlushMode(FlushMode.ALWAYS);
         this.session.beginTransaction();
     }
 
-    /***
-     *
-     * @param e the experiment to be persisted
-     */
     public void saveExperiment(Experiment e) {
-//        session.beginTransaction();
         session.save(e);
-        session.flush(); //forces INSERT
+//        session.flush(); //forces INSERT
 //        session.refresh(e); //should update e with the experiment number generated in the DB
-//        session.getTransaction().commit();
     }
 
-    /***
-     *
-     */
     public String getFabanRunId(String username, String benchmarkName, long experimentNumber, int trialNumber) {
-//        session.beginTransaction();
 
         String query = "select t.fabanRunId from Trial t where " +
                        "t.experiment.username = :uname and " +
@@ -50,19 +37,49 @@ public class DbSession implements AutoCloseable {
                        "t.experiment.experimentNumber = :expNum and " +
                        "t.trialNumber = :trialNum";
 
-        String fabanRunId = (String) session.createQuery(query)
-                                      .setParameter("uname", username)
-                                      .setParameter("bname", benchmarkName)
-                                      .setParameter("expNum", experimentNumber)
-                                      .setParameter("trialNum", trialNumber)
-                                      .uniqueResult();
-
-//        session.getTransaction().commit();
-        return fabanRunId;
+        return (String) session.createQuery(query)
+                               .setParameter("uname", username)
+                               .setParameter("bname", benchmarkName)
+                               .setParameter("expNum", experimentNumber)
+                               .setParameter("trialNum", trialNumber)
+                               .uniqueResult();
     }
 
     public void rollback() {
-        this.session.getTransaction().rollback();
+        session.getTransaction().rollback();
+    }
+
+    public void update(Object row) {
+        session.update(row);
+    }
+
+    public Trial get(String userId, String benchmarkName, long experimentNumber, int trialNumber) {
+        String query = "select t from Trial t where " +
+                       "t.experiment.username = :uname and " +
+                       "t.experiment.benchmarkName = :bname and " +
+                       "t.experiment.experimentNumber = :expNum and " +
+                       "t.trialNumber = :trialNum";
+
+        return (Trial) session.createQuery(query)
+                              .setParameter("uname", userId)
+                              .setParameter("bname", benchmarkName)
+                              .setParameter("expNum", experimentNumber)
+                              .setParameter("trialNum", trialNumber)
+                              .uniqueResult();
+    }
+
+    public Experiment get(String userId, String benchmarkName, long experimentNumber) {
+
+        String query = "select e from Experiment e where " +
+                            "e.username = :uname and " +
+                            "e.benchmarkName = :bname and " +
+                            "e.experimentNumber = :expNum";
+
+        return (Experiment) session.createQuery(query)
+                                   .setParameter("uname", userId)
+                                   .setParameter("bname", benchmarkName)
+                                   .setParameter("expNum", experimentNumber)
+                                   .uniqueResult();
     }
 
     public void updateTrials(Set<Trial> trials) {
@@ -70,7 +87,7 @@ public class DbSession implements AutoCloseable {
         for(Trial t: trials) {
             session.update(t);
         }
-        session.flush();
+//        session.flush();
 //        session.getTransaction().commit();
     }
 
@@ -80,7 +97,7 @@ public class DbSession implements AutoCloseable {
 
     @Override
     public void close() {
-        this.session.getTransaction().commit();
-        this.session.close();
+        session.getTransaction().commit();
+        session.close();
     }
 }
