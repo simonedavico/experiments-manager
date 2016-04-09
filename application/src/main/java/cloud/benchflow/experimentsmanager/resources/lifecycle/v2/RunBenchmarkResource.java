@@ -192,118 +192,118 @@ public class RunBenchmarkResource {
         return experiment.getExperimentId();
     }
 
-    @POST
-    @Path("{benchmarkName}")
-    @Produces("application/vnd.experiments-manager.v2+json")
-    public DeployStatusResponse run(@PathParam("benchmarkName") String benchmarkName) throws IOException {
-
-        String user = "BenchFlow";
-        String benchmarkId = user + "/" + benchmarkName;
-
-        try(DbSession dbSession = db.getSession()) {
-
-            String dd = minio.getOriginalDeploymentDescriptor(benchmarkId);
-            Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(dd);
-            int trials = Integer.valueOf((String) parsedDD.get("trials"));
-
-            logger.debug("Retrieved number of trials for benchmark " + benchmarkId + ": " + trials);
-
-            Experiment experiment = new Experiment(user, benchmarkName);
-            for (int i = 1; i <= trials; i++) {
-                Trial trial = new Trial(i);
-                experiment.addTrial(trial);
-            }
-
-            dbSession.saveExperiment(experiment);
-
-            logger.debug("Saved experiment");
-
-            //ask drivers-maker to generate the packet
-            try {
-                driversMaker.generateDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
-            } catch (BenchmarkGenerationException e) {
-                dbSession.rollback();
-                throw new BenchmarkRunException(e.getMessage(), e);
-            }
-
-            logger.debug("Generated Faban driver");
-
-            long experimentNumber = experiment.getExperimentNumber();
-
-            //get the packet from minio
-            InputStream driver = minio.getGeneratedDriver(benchmarkId, experimentNumber);
-
-            //deploy the driver
-            try {
-                faban.deploy(driver, experiment.getExperimentId());
-            } catch (FabanClientException e) {
-                dbSession.rollback();
-                throw new BenchmarkRunException(e.getMessage(), e);
-            }
-
-            logger.debug("Driver successfully deployed");
-
-            //send the runs to faban
-            CompletionService<Trial> cs = new ExecutorCompletionService<>(runBenchmarkPool);
-
-            //make concurrent run requests to faban
-            for (Trial t : experiment.getTrials()) {
-                cs.submit(() -> {
-                    int retries = submitRetries;
-                    String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
-
-                    RunId runId;
-                    while(true) {
-                        try {
-                            runId = faban.submit(experiment.getExperimentId(), experiment.getExperimentId(),
-                                                 IOUtils.toInputStream(config, Charsets.UTF_8));
-                            break;
-                        } catch(FabanClientException e) {
-                            if(retries > 0) retries--;
-                            else {
-                                dbSession.rollback();
-                                throw new BenchmarkRunException(e.getMessage(), e);
-                            }
-                        }
-                    }
-
-                    t.setFabanRunId(runId.toString());
-                    return t;
-                });
-            }
-
-            //TODO: the same can probably be done with a CountDownLatch
-            int received = 0;
-            while (received < experiment.getTrials().size()) {
-
-                try {
-                    Future<Trial> updatedTrialResponse = cs.take();
-                    Trial updatedTrial = updatedTrialResponse.get();
-
-                    logger.debug("Received trial " + updatedTrial.getTrialNumber() +
-                                 "with run ID: " + updatedTrial.getFabanRunId());
-
-                    received++;
-
-                } catch (InterruptedException | ExecutionException e) {
-                    dbSession.rollback();
-                    throw new BenchmarkRunException(e.getMessage(), e);
-                }
-
-            }
-
-            //update the trials
-            dbSession.updateTrials(experiment.getTrials());
-
-        }
-
-        catch(Exception e) {
-            //decide what to do here
-        }
-
-        //TODO: return the experiment id here
-        return new DeployStatusResponse("Deployed");
-    }
+//    @POST
+//    @Path("{benchmarkName}")
+//    @Produces("application/vnd.experiments-manager.v2+json")
+//    public DeployStatusResponse run(@PathParam("benchmarkName") String benchmarkName) throws IOException {
+//
+//        String user = "BenchFlow";
+//        String benchmarkId = user + "/" + benchmarkName;
+//
+//        try(DbSession dbSession = db.getSession()) {
+//
+//            String dd = minio.getOriginalDeploymentDescriptor(benchmarkId);
+//            Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(dd);
+//            int trials = Integer.valueOf((String) parsedDD.get("trials"));
+//
+//            logger.debug("Retrieved number of trials for benchmark " + benchmarkId + ": " + trials);
+//
+//            Experiment experiment = new Experiment(user, benchmarkName);
+//            for (int i = 1; i <= trials; i++) {
+//                Trial trial = new Trial(i);
+//                experiment.addTrial(trial);
+//            }
+//
+//            dbSession.saveExperiment(experiment);
+//
+//            logger.debug("Saved experiment");
+//
+//            //ask drivers-maker to generate the packet
+//            try {
+//                driversMaker.generateDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
+//            } catch (BenchmarkGenerationException e) {
+//                dbSession.rollback();
+//                throw new BenchmarkRunException(e.getMessage(), e);
+//            }
+//
+//            logger.debug("Generated Faban driver");
+//
+//            long experimentNumber = experiment.getExperimentNumber();
+//
+//            //get the packet from minio
+//            InputStream driver = minio.getGeneratedDriver(benchmarkId, experimentNumber);
+//
+//            //deploy the driver
+//            try {
+//                faban.deploy(driver, experiment.getExperimentId());
+//            } catch (FabanClientException e) {
+//                dbSession.rollback();
+//                throw new BenchmarkRunException(e.getMessage(), e);
+//            }
+//
+//            logger.debug("Driver successfully deployed");
+//
+//            //send the runs to faban
+//            CompletionService<Trial> cs = new ExecutorCompletionService<>(runBenchmarkPool);
+//
+//            //make concurrent run requests to faban
+//            for (Trial t : experiment.getTrials()) {
+//                cs.submit(() -> {
+//                    int retries = submitRetries;
+//                    String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
+//
+//                    RunId runId;
+//                    while(true) {
+//                        try {
+//                            runId = faban.submit(experiment.getExperimentId(), experiment.getExperimentId(),
+//                                                 IOUtils.toInputStream(config, Charsets.UTF_8));
+//                            break;
+//                        } catch(FabanClientException e) {
+//                            if(retries > 0) retries--;
+//                            else {
+//                                dbSession.rollback();
+//                                throw new BenchmarkRunException(e.getMessage(), e);
+//                            }
+//                        }
+//                    }
+//
+//                    t.setFabanRunId(runId.toString());
+//                    return t;
+//                });
+//            }
+//
+//            //TODO: the same can probably be done with a CountDownLatch
+//            int received = 0;
+//            while (received < experiment.getTrials().size()) {
+//
+//                try {
+//                    Future<Trial> updatedTrialResponse = cs.take();
+//                    Trial updatedTrial = updatedTrialResponse.get();
+//
+//                    logger.debug("Received trial " + updatedTrial.getTrialNumber() +
+//                                 "with run ID: " + updatedTrial.getFabanRunId());
+//
+//                    received++;
+//
+//                } catch (InterruptedException | ExecutionException e) {
+//                    dbSession.rollback();
+//                    throw new BenchmarkRunException(e.getMessage(), e);
+//                }
+//
+//            }
+//
+//            //update the trials
+//            dbSession.updateTrials(experiment.getTrials());
+//
+//        }
+//
+//        catch(Exception e) {
+//            //decide what to do here
+//        }
+//
+//        //TODO: return the experiment id here
+//        return new DeployStatusResponse("Deployed");
+//    }
 
 
 
