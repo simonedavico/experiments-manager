@@ -112,6 +112,7 @@ public class StatusBenchmarkResource {
            if(!experiment.isCompleted() &&
               experiment.getTrials().stream().filter(Trial::isCompleted).count() == experiment.getTrials().size()) {
                experiment.setCompleted();
+               response.setExperimentStatus(experiment.getStatus());
                session.update(experiment);
            }
 

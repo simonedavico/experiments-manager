@@ -55,12 +55,12 @@ public class DbSessionManager {
         session.beginTransaction();
 
         java.nio.file.Path createExperimentsTableQuery =
-                Paths.get("./application/src/main/resources/db/create-experiments-table.txt");
+                Paths.get("./application/src/main/resources/db/create-experiments-table.sql");
         final String createExperimentsTable =
                 FileUtils.readFileToString(createExperimentsTableQuery.toFile(), Charsets.UTF_8);
 
         java.nio.file.Path createTrialsTableQuery =
-                Paths.get("./application/src/main/resources/db/create-trials-table.txt");
+                Paths.get("./application/src/main/resources/db/create-trials-table.sql");
         final String createTrialsTable =
                 FileUtils.readFileToString(createTrialsTableQuery.toFile(), Charsets.UTF_8);
 

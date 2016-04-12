@@ -18,9 +18,8 @@ import java.sql.SQLException;
  */
 public class ExperimentNumberGenerator implements IdentifierGenerator {
 
-    //TODO: make this synchronized?
     @Override
-    public Serializable generate(SessionImplementor session, Object o) throws HibernateException {
+    public synchronized Serializable generate(SessionImplementor session, Object o) throws HibernateException {
 
         Connection c = session.connection();
         Experiment exp = (Experiment) o;
@@ -28,13 +27,13 @@ public class ExperimentNumberGenerator implements IdentifierGenerator {
         String username = exp.getUsername();
         try {
 
-            PreparedStatement ps = c.prepareStatement("SELECT COUNT(*) FROM EXPERIMENTS WHERE USERNAME = '" + username
+            PreparedStatement ps = c.prepareStatement("SELECT MAX(EXP_NUMBER)+1 FROM EXPERIMENTS WHERE USERNAME = '" + username
                                                     + "' AND BENCHMARK_NAME = '" + benchmarkName + "'");
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()) {
-                long count = rs.getLong("COUNT(*)");
-                return count + 1;
+                long count = rs.getLong("MAX(EXP_NUMBER)+1");
+                return count;
             }
 
         } catch (SQLException e) {

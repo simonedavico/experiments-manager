@@ -66,10 +66,10 @@ public class DeployBenchmarkResource {
                     "mandatory field benchmark_name");
         }
 
-        final String benchmarkId = user + "/" + benchmarkName;
+        final String minioBenchmarkId = user + "/" + benchmarkName;
 
         try {
-            minio.saveOriginalBenchFlowBenchmark(benchmarkId, bb);
+            minio.saveOriginalBenchFlowBenchmark(minioBenchmarkId, bb);
 
             logger.debug("Saved benchmark configuration");
 
@@ -78,19 +78,19 @@ public class DeployBenchmarkResource {
                 if(BenchmarkArchiveUtils.isDeploymentDescriptor.test(entry)) {
 
                     String content = IOUtils.toString(in, "UTF-8");
-                    minio.saveOriginalDeploymentDescriptor(benchmarkId, content);
+                    minio.saveOriginalDeploymentDescriptor(minioBenchmarkId, content);
 
                     logger.debug("Saved deployment descriptor");
 
                 } else if (BenchmarkArchiveUtils.isModel.test(entry)) {
 
                     String modelName = BenchmarkArchiveUtils.getEntryFileName.apply(entry);
-                    minio.saveModel(benchmarkId, modelName, in);
+                    minio.saveModel(minioBenchmarkId, modelName, in);
                     logger.debug("Saved model " + modelName);
 
                 } else if (BenchmarkArchiveUtils.isBenchmarkSources.test(entry)) {
 
-                    minio.saveBenchmarkSources(in, benchmarkId);
+                    minio.saveBenchmarkSources(in, minioBenchmarkId);
                     logger.debug("Saved sources");
 
                 }
@@ -100,7 +100,7 @@ public class DeployBenchmarkResource {
         }
 
         catch (Exception e) {
-            cleanUp(benchmarkId);
+            cleanUp(minioBenchmarkId);
             throw new BenchmarkDeployException(e.getMessage(), e);
         }
     }

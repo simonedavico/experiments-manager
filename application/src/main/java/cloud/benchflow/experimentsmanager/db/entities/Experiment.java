@@ -144,6 +144,8 @@ public class Experiment {
         return username + "." + benchmarkName + "." + experimentNumber;
     }
 
+    public String getBenchmarkId() { return username + "." + benchmarkName; }
+
     public String getStatus() { return status.name(); }
 
     public void setQueued() { status = Status.QUEUED; }

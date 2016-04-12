@@ -71,9 +71,9 @@ public class DbSession implements AutoCloseable {
     public Experiment get(String userId, String benchmarkName, long experimentNumber) {
 
         String query = "select e from Experiment e where " +
-                            "e.username = :uname and " +
-                            "e.benchmarkName = :bname and " +
-                            "e.experimentNumber = :expNum";
+                              "e.username = :uname and " +
+                              "e.benchmarkName = :bname and " +
+                              "e.experimentNumber = :expNum";
 
         return (Experiment) session.createQuery(query)
                                    .setParameter("uname", userId)

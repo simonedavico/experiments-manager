@@ -33,6 +33,7 @@ public class ExperimentStatusResponse {
         this.experimentId = experimentId;
     }
 
+    public void setExperimentStatus(String status) { this.status = status; }
 
     public List<TrialStatusResponse> getTrialsStatus() {
         return trialsStatus;

@@ -78,7 +78,8 @@ public class RunBenchmarkResource {
 
             try {
                 String benchmarkName = experiment.getBenchmarkName();
-                String benchmarkId = experiment.getUsername() + "." + benchmarkName;
+//                String benchmarkId = experiment.getUsername() + "." + benchmarkName;
+                String benchmarkId = experiment.getBenchmarkId();
                 String minioBenchmarkId = experiment.getUsername() + "/" + benchmarkName;
                 long experimentNumber = experiment.getExperimentNumber();
 
@@ -104,12 +105,12 @@ public class RunBenchmarkResource {
                         int retries = submitRetries;
                         String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
 
-                        RunId runId;
-                        while (true) {
+                        RunId runId = null;
+                        while (runId == null) {
                             try {
-                                runId = faban.submit(experiment.getExperimentId(), experiment.getExperimentId(),
+                                runId = faban.submit(experiment.getExperimentId(), t.getTrialId(),
                                         IOUtils.toInputStream(config, Charsets.UTF_8));
-                                break;
+//                                break;
                             } catch (FabanClientException e) {
                                 if (retries > 0) retries--;
                                 else {
@@ -159,7 +160,7 @@ public class RunBenchmarkResource {
     public String runAsync(@PathParam("benchmarkName") String benchmarkName) {
 
         String user = "BenchFlow";
-        String benchmarkId = user + "." + benchmarkName;
+//        String benchmarkId = user + "." + benchmarkName;
         String minioBenchmarkId = user + "/" + benchmarkName;
         Experiment experiment;
         //experiment.status = GENERATING
@@ -170,9 +171,11 @@ public class RunBenchmarkResource {
         Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(dd);
         int trials = Integer.valueOf((String) parsedDD.get("trials"));
 
+        experiment = new Experiment(user, benchmarkName);
+        String benchmarkId = experiment.getBenchmarkId();
+
         logger.debug("Retrieved number of trials for benchmark " + benchmarkId + ": " + trials);
 
-        experiment = new Experiment(user, benchmarkName);
         for (int i = 1; i <= trials; i++) {
             Trial trial = new Trial(i);
             experiment.addTrial(trial);
@@ -304,7 +307,5 @@ public class RunBenchmarkResource {
 //        //TODO: return the experiment id here
 //        return new DeployStatusResponse("Deployed");
 //    }
-
-
 
 }
