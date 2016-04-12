@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.responses.faban;
+package cloud.benchflow.experimentsmanager.responses.lifecycle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class DeployStatusResponse {
 
-    @JsonProperty("status")
+    @JsonProperty("deploy")
     private String status;
 
     public String getStatus() {

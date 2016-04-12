@@ -13,4 +13,8 @@ public class BenchmarkRunException extends WebApplicationException {
         super(message, cause);
     }
 
+    public BenchmarkRunException(String message) {
+        super(message);
+    }
+
 }

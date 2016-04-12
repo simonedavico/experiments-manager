@@ -4,11 +4,14 @@ import cloud.benchflow.experimentsmanager.configurations.DriversMakerConfigurati
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
@@ -22,12 +25,16 @@ public class DriversMakerModule extends AbstractModule {
     }
 
     @Provides
-    @Named("drivers.maker")
-    public DriversMaker provideDriversMaker(ExperimentsManagerConfiguration config, Environment environment) {
-        final HttpClient httpClient = new HttpClientBuilder(environment)
-                                      .using(config.getHttpClientConfiguration())
-                                      .build(environment.getName());
+    @Named("drivers-maker")
+    @Inject
+    public DriversMaker provideDriversMaker(/*@Named("http") HttpClient httpClient,*/
+                                            ExperimentsManagerConfiguration config,
+                                            Environment environment) {
+//        final HttpClient httpClient = new HttpClientBuilder(environment)
+//                                      .using(config.getHttpClientConfiguration())
+//                                      .build(environment.getName());
         DriversMakerConfiguration dmConfig = config.getDriversMakerConfiguration();
+        HttpClient httpClient = HttpClients.createDefault();
         return new DriversMaker(dmConfig.getAddress(),httpClient);
     }
 

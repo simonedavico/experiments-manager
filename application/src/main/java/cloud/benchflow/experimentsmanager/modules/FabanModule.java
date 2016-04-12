@@ -33,4 +33,10 @@ public class FabanModule extends AbstractModule {
                                           new URI(fabanConfig.getAddress())));
     }
 
+    @Provides
+    @Named("retries")
+    public Integer provideRetries(ExperimentsManagerConfiguration config) {
+        return config.getFabanConfiguration().getSubmitRetries();
+    }
+
 }

@@ -16,6 +16,8 @@ public class FabanConfiguration {
     @NotEmpty
     private String address;
 
+	private int submitRetries;
+
     public String getAddress() {
         return address;
     }
@@ -51,4 +53,15 @@ public class FabanConfiguration {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+    /**
+     * @return the number of retries for the submission of a driver
+     */
+    public int getSubmitRetries() {
+        return submitRetries;
+    }
+
+    public void setSubmitRetries(int submitRetries) {
+        this.submitRetries = submitRetries;
+    }
 }

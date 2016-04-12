@@ -1,16 +1,22 @@
 #Dropwizard
-minio:
-  accessKey: ${env.MINIO_ACCESS_KEY}
-  secretKey: ${env.MINIO_SECRET_KEY}
-  address: ${env.MINIO_ADDRESS}
+database:
+  name: ${env.DB_NAME}
+  host: ${env.DB_HOST}
+  port: ${env.DB_PORT}
+  user: ${env.DB_USER}
+  password: ${env.DB_PASSWORD}
 
-drivers.maker:
+benchflow.env:
+  config.yml: /app/config.yml
+
+drivers-maker:
   address: ${env.DRIVERS_MAKER_ADDRESS}
 
 faban:
   user: ${env.FABAN_USER!""}
   password: ${env.FABAN_PASSWORD!""}
   address: ${env.FABAN_ADDRESS}
+  submitRetries: ${env.FABAN_SUBMIT_RETRIES!5}
 
 server:
   type: default
@@ -27,7 +33,8 @@ logging:
   level: INFO
   loggers:
     io.dropwizard: INFO
-    DeployBenchmarkResourceLogger: DEBUG
+    cloud.benchflow.experimentsmanager.resources.lifecycle.v2.RunBenchmarkResource: ALL
+    cloud.benchflow.experimentsmanager.resources.lifecycle.v2.DeployBenchmarkResource: ALL
   appenders:
     - type: console
       threshold: ALL
