@@ -1,10 +1,9 @@
 #Dropwizard
 database:
-  name: ${env.DB_NAME}
-  host: ${env.DB_HOST}
-  port: ${env.DB_PORT}
-  user: ${env.DB_USER}
-  password: ${env.DB_PASSWORD}
+  name: ${env.DB_NAME!"experiments"}
+  address: ${env.DB_ADDRESS}
+  user: ${env.DB_USER!"root"}
+  password: ${env.DB_PASSWORD!""}
 
 benchflow.env:
   config.yml: /app/config.yml
@@ -17,6 +16,9 @@ faban:
   password: ${env.FABAN_PASSWORD!""}
   address: ${env.FABAN_ADDRESS}
   submitRetries: ${env.FABAN_SUBMIT_RETRIES!5}
+
+minio:
+  address: ${env.MINIO_ADDRESS}
 
 server:
   type: default

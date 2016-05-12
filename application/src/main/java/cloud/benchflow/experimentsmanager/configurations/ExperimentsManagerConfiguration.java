@@ -32,6 +32,11 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty
     private DbConfiguration dbConfiguration = new DbConfiguration();
 
+    @Valid
+    @NotNull
+    @JsonProperty
+    private MinioConfiguration minioConfiguration = new MinioConfiguration();
+
 //    public HttpClientConfiguration getHttpClientConfiguration() {
 //        return httpClient;
 //    }
@@ -74,5 +79,15 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty("benchflow.env")
     public void setBenchFlowEnvConfiguration(BenchFlowEnvConfiguration benchFlowEnvConfiguration) {
         this.benchFlowEnvConfiguration = benchFlowEnvConfiguration;
+    }
+
+    @JsonProperty("minio")
+    public MinioConfiguration getMinioConfiguration() {
+        return minioConfiguration;
+    }
+
+    @JsonProperty("minio")
+    public void setMinioConfiguration(MinioConfiguration minioConfiguration) {
+        this.minioConfiguration = minioConfiguration;
     }
 }

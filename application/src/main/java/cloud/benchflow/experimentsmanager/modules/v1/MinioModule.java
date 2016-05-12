@@ -32,9 +32,10 @@ public class MinioModule extends AbstractModule {
     @Inject
     public MinioHandler provideMinio(ExperimentsManagerConfiguration config, @Named("bfEnv")BenchFlowEnv benv)
             throws MalformedURLException, InvalidPortException, InvalidEndpointException {
-        String minioIp = benv.<String>getVariable("BENCHFLOW_MINIO_IP");
-        String minioPort = benv.<String>getVariable("BENCHFLOW_MINIO_PORT");
-        String minioAddress = "http://" + minioIp + ":" + minioPort;
+//        String minioIp = benv.<String>getVariable("BENCHFLOW_MINIO_IP");
+//        String minioPort = benv.<String>getVariable("BENCHFLOW_MINIO_PORT");
+        //String minioAddress = "http://" + minioIp + ":" + minioPort;
+        String minioAddress = config.getMinioConfiguration().getAddress();
         String accessKey = benv.<String>getVariable("BENCHFLOW_MINIO_ACCESS_KEY");
         String secretKey = benv.<String>getVariable("BENCHFLOW_MINIO_SECRET_KEY");
         return new MinioHandlerImpl(minioAddress,accessKey,secretKey);

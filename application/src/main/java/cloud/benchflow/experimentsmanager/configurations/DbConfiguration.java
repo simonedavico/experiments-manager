@@ -7,8 +7,7 @@ package cloud.benchflow.experimentsmanager.configurations;
  */
 public class DbConfiguration {
 
-    private String host;
-    private int port;
+    private String address;
     private String user;
     private String name;
     private String password;
@@ -29,20 +28,12 @@ public class DbConfiguration {
         this.user = user;
     }
 
-    public int getPort() {
-        return port;
+    public String getAddress() {
+        return address;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getPassword() {

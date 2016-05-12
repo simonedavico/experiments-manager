@@ -51,7 +51,7 @@ public class RunBenchmarkResource {
                                 @Named("retries") Integer submitRetries,
                                 @Named("drivers-maker") DriversMaker driversMaker,
                                 @Named("runBenchmarkExecutorService") ExecutorService runBenchmarkPool,
-                                @Named("submitRunsPool") ExecutorService submitRunsPool) {
+                                @Named("submitRunExecutorService") ExecutorService submitRunsPool) {
         this.minio = minio;
         this.db = db;
         this.faban = faban;
@@ -127,6 +127,7 @@ public class RunBenchmarkResource {
                 int received = 0;
                 while (received < experiment.getTrials().size()) {
 
+                    //TODO: handle the case in which some trials fails to submit
                     Future<Trial> updatedTrialResponse = cs.take();
                     Trial updatedTrial = updatedTrialResponse.get();
 
