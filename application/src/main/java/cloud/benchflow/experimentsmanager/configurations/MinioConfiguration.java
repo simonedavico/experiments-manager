@@ -10,29 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class MinioConfiguration {
 
     @NotEmpty
-    private String secretKey;
-
-    @NotEmpty
-    private String accessKey;
-
-    @NotEmpty
     private String address;
-
-    public String getAccessKey() {
-        return accessKey;
-    }
-
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
 
     public String getAddress() {
         return address;

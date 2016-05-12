@@ -10,7 +10,7 @@
 	<artifactId>application</artifactId>
 	<properties>
 		<jersey.multipart.version>2.19</jersey.multipart.version>
-        <minio.version>1.0.1</minio.version>
+        <minio.version>1.0.2</minio.version>
         <faban.client.version>0.1.0</faban.client.version>
         <snakeyaml.version>1.16</snakeyaml.version>
 		<hibernate.version>5.0.7.Final</hibernate.version>

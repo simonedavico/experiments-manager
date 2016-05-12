@@ -22,11 +22,12 @@ public class DbSessionManager {
 
     private SessionFactory sessionFactory;
 
-    public DbSessionManager(String url, int port, String dbName, String username) {
+    public DbSessionManager(String url, String dbName, String username) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
+        System.out.println("jdbc:mysql://" + url + "/" + dbName + "?createDatabaseIfNotExist=true");
         builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
-                .applySetting("hibernate.connection.url", "jdbc:mysql://" + url + ":" +
-                        port + "/" + dbName + "?createDatabaseIfNotExist=true")
+                .applySetting("hibernate.connection.url", "jdbc:mysql://" + url +
+                              "/" + dbName + "?createDatabaseIfNotExist=true")
                 .applySetting("hibernate.connection.username", username)
                 .applySetting("hibernate.connection.password", "");
 

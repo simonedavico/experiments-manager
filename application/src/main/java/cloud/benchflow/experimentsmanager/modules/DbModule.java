@@ -22,7 +22,7 @@ public class DbModule extends AbstractModule {
     @Provides @Singleton @Named("db")
     public DbSessionManager provideDb(ExperimentsManagerConfiguration config, Environment env) {
         DbConfiguration dbConfig = config.getDbConfiguration();
-        DbSessionManager sessionFactory = new DbSessionManager(dbConfig.getHost(), dbConfig.getPort(),
+        DbSessionManager sessionFactory = new DbSessionManager(dbConfig.getAddress(),
                                                                dbConfig.getName(), dbConfig.getUser());
         return sessionFactory;
     }
