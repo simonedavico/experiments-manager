@@ -106,7 +106,6 @@ public class RunExperimentResource {
 //                                runId = new RunId(benchmarkName,"foo");
                                 runId = faban.submit(experiment.getExperimentId(), t.getTrialId(),
                                         IOUtils.toInputStream(config, Charsets.UTF_8));
-//                                break;
                             } catch (FabanClientException e) {
                                 if (retries > 0) retries--;
                                 else {
@@ -134,11 +133,11 @@ public class RunExperimentResource {
 
                 experiment.setRunning();
 
-            } catch(DriverGenerationException e) {
-                experiment.setAborted();
-                throw new ExperimentRunException(e.getMessage(), e);
             } catch(Exception e) {
-                experimentsDAO.cleanUp(experiment);
+                experiment.setAborted();
+                //TODO: set all trials as aborted, if any
+                //check if any of them was queued on faban, to kill it
+                experimentsDAO.update(experiment);
                 throw new ExperimentRunException(e.getMessage(), e);
             } finally {
                 experimentsDAO.close();

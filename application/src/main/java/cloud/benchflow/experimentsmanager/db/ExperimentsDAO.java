@@ -25,12 +25,6 @@ public class ExperimentsDAO implements AutoCloseable {
         this.sessionFactory = sessionFactory;
     }
 
-    public void saveExperiment(Experiment e) {
-        sessionFactory.getCurrentSession().beginTransaction();
-        sessionFactory.getCurrentSession().save(e);
-        sessionFactory.getCurrentSession().getTransaction().commit();
-    }
-
     private static class ExperimentsDAOCommand<T> {
 
         private Function<SessionFactory, T> function;
@@ -52,7 +46,7 @@ public class ExperimentsDAO implements AutoCloseable {
 
         public T execute(SessionFactory sf) {
             //execute either the function, or the consumer (returning null)
-            if(function != null)
+            if (function != null)
                 return function.apply(sf);
             else {
                 consumer.accept(sf);
@@ -61,8 +55,18 @@ public class ExperimentsDAO implements AutoCloseable {
 
         }
 
-        public String getQueryDescription() { return queryDescription; }
+        public String getQueryDescription() {
+            return queryDescription;
+        }
 
+    }
+
+    public void saveExperiment(Experiment e) {
+        ExperimentsDAOCommand<Void> cmd = new ExperimentsDAOCommand<>((sf) -> {
+            sessionFactory.getCurrentSession().save(e);
+        }, "saveExperiment");
+
+        loggedTransaction(cmd);
     }
 
     private <T> T loggedTransaction(ExperimentsDAOCommand<T> command) {
@@ -72,10 +76,10 @@ public class ExperimentsDAO implements AutoCloseable {
 
             tx = sessionFactory.getCurrentSession().beginTransaction();
             T result = command.execute(sessionFactory);
-            sessionFactory.getCurrentSession().getTransaction().commit();
+            tx.commit();
             return result;
 
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             try {
                 assert tx != null;
                 tx.rollback();
@@ -163,9 +167,7 @@ public class ExperimentsDAO implements AutoCloseable {
     public void cleanUp(Experiment e) {
 
         ExperimentsDAOCommand<Void> cmd = new ExperimentsDAOCommand<>((sf) -> {
-            sf.getCurrentSession().beginTransaction();
             sf.getCurrentSession().delete(e);
-            sf.getCurrentSession().getTransaction().commit();
         }, "cleanUp");
 
         loggedTransaction(cmd);

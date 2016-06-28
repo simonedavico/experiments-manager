@@ -163,6 +163,4 @@ public class Experiment {
 
     public void setAborted() { status = Status.ABORTED; }
 
-
-
 }
