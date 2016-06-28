@@ -1,7 +1,7 @@
 REPONAME = experiments-manager
 DOCKERIMAGENAME = benchflow/$(REPONAME)
 
-DBNAME = memsql
+DBNAME = mysql
 
 VERSION = dev
 JAVA_VERSION_FOR_COMPILATION = java-8-oracle 
@@ -32,7 +32,7 @@ build_container_local:
 	rm target/benchflow-$(REPONAME).jar
 
 test_container_local:
-    docker run -d -p 3306:3306 -p 9000:9000 --name $(DBNAME) memsql/quickstart
+    docker run -p 3306:3306 --name $(DBNAME) -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_USER=root -d mysql:latest
 	docker run -ti --rm -e "ENVCONSUL_CONSUL=$(ENVCONSUL_CONSUL)" \
 	-e "FABAN_ADDRESS=$(FABAN_ADDRESS)" -e "DRIVERS_MAKER_ADDRESS=$(DRIVERS_MAKER_ADDRESS)" \
 	-e "DB_USER=$(DB_USER)" -e "DB_PASSWORD=$(DB_PASSWORD)" -e "DB_HOST=$(DB_HOST)" \
