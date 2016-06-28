@@ -18,12 +18,11 @@ import java.util.Set;
 @Entity
 @Table(name = "EXPERIMENTS")
 @IdClass(Experiment.ExperimentId.class)
-//@SQLInsert(sql="insert into EXPERIMENTS (PERFORMED_ON, BENCHMARK_NAME, EXP_NUMBER, USERNAME) values ()")
 public class Experiment {
 
     //TODO: maybe only RUNNING and COMPLETED are necessary?
     private enum Status {
-        GENERATING, QUEUED, RUNNING, COMPLETED
+        GENERATING, QUEUED, RUNNING, COMPLETED, ABORTED
     }
 
     Experiment() {}
@@ -159,6 +158,10 @@ public class Experiment {
     public boolean isRunning() { return status == Status.RUNNING; }
 
     public boolean isCompleted() { return status == Status.COMPLETED; }
+
+    public boolean isAborted() { return status == Status.ABORTED; }
+
+    public void setAborted() { status = Status.ABORTED; }
 
 
 

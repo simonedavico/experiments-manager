@@ -26,16 +26,15 @@ public class ExperimentNumberGenerator implements IdentifierGenerator {
         String benchmarkName = exp.getBenchmarkName();
         String username = exp.getUsername();
         try {
-
-            PreparedStatement ps = c.prepareStatement("SELECT MAX(EXP_NUMBER)+1 FROM EXPERIMENTS WHERE USERNAME = '" + username
-                                                    + "' AND BENCHMARK_NAME = '" + benchmarkName + "'");
+            PreparedStatement ps = c.prepareStatement(
+                    "SELECT IFNULL(MAX(EXP_NUMBER)+1, 1) as nextExpId FROM EXPERIMENTS WHERE USERNAME = '" + username +
+                    "' AND BENCHMARK_NAME = '" + benchmarkName + "'");
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()) {
-                long count = rs.getLong("MAX(EXP_NUMBER)+1");
+                long count = rs.getLong("nextExpId");
                 return count;
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new HibernateException("Error while retrieving count of experiments for user " + username +

@@ -7,13 +7,13 @@ import javax.ws.rs.WebApplicationException;
  *
  * Created on 11/12/15.
  */
-public class BenchmarkRunException extends WebApplicationException {
+public class ExperimentRunException extends WebApplicationException {
 
-    public BenchmarkRunException(String message, Throwable cause) {
+    public ExperimentRunException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public BenchmarkRunException(String message) {
+    public ExperimentRunException(String message) {
         super(message);
     }
 

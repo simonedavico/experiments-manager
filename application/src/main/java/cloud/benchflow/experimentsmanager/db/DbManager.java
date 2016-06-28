@@ -11,6 +11,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -18,11 +19,11 @@ import java.util.List;
  *
  * Created on 07/03/16.
  */
-public class DbSessionManager {
+public class DbManager {
 
     private SessionFactory sessionFactory;
 
-    public DbSessionManager(String url, String dbName, String username) {
+    public DbManager(String url, String dbName, String username) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         System.out.println("jdbc:mysql://" + url + "/" + dbName + "?createDatabaseIfNotExist=true");
         builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
@@ -55,12 +56,12 @@ public class DbSessionManager {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        java.nio.file.Path createExperimentsTableQuery =
+        Path createExperimentsTableQuery =
                 Paths.get("./application/src/main/resources/db/create-experiments-table.sql");
         final String createExperimentsTable =
                 FileUtils.readFileToString(createExperimentsTableQuery.toFile(), Charsets.UTF_8);
 
-        java.nio.file.Path createTrialsTableQuery =
+        Path createTrialsTableQuery =
                 Paths.get("./application/src/main/resources/db/create-trials-table.sql");
         final String createTrialsTable =
                 FileUtils.readFileToString(createTrialsTableQuery.toFile(), Charsets.UTF_8);
@@ -82,8 +83,8 @@ public class DbSessionManager {
         session.close();
     }
 
-    public DbSession getSession() {
-        return new DbSession(this.sessionFactory);
+    public ExperimentsDAO getExperimentsDAO() {
+        return new ExperimentsDAO(this.sessionFactory);
     }
 
 }

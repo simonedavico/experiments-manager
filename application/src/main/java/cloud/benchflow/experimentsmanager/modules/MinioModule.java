@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.modules.v2;
+package cloud.benchflow.experimentsmanager.modules;
 
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
 import cloud.benchflow.experimentsmanager.utils.env.BenchFlowEnv;
@@ -23,14 +23,10 @@ public class MinioModule extends AbstractModule{
 
     @Provides
     @Singleton
-    @Named("minio.v2")
+    @Named("minio")
     @Inject
     public BenchFlowMinioClient provideMinio(ExperimentsManagerConfiguration ec, @Named("bfEnv")BenchFlowEnv benv)
             throws InvalidPortException, InvalidEndpointException {
-
-//        String minioIp = benv.<String>getVariable("BENCHFLOW_MINIO_IP");
-//        String minioPort = benv.<String>getVariable("BENCHFLOW_MINIO_PORT");
-//        String minioAddress = "http://" + minioIp + ":" + minioPort;
         String minioAddress = ec.getMinioConfiguration().getAddress();
         String accessKey = benv.<String>getVariable("BENCHFLOW_MINIO_ACCESS_KEY");
         String secretKey = benv.<String>getVariable("BENCHFLOW_MINIO_SECRET_KEY");

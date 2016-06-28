@@ -46,7 +46,7 @@ public class DeployBenchmarkResource {
     private Logger logger;
 
     @Inject
-    public DeployBenchmarkResource(@Named("minio.v2") BenchFlowMinioClient minio) {
+    public DeployBenchmarkResource(@Named("minio") BenchFlowMinioClient minio) {
         this.minio = minio;
         this.logger = LoggerFactory.getLogger(this.getClass().getName());
     }
