@@ -10,8 +10,6 @@ import com.google.inject.name.Named;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)
@@ -30,11 +28,11 @@ public class DriversMakerModule extends AbstractModule {
     public DriversMaker provideDriversMaker(/*@Named("http") HttpClient httpClient,*/
                                             ExperimentsManagerConfiguration config,
                                             Environment environment) {
-//        final HttpClient httpClient = new HttpClientBuilder(environment)
-//                                      .using(config.getHttpClientConfiguration())
-//                                      .build(environment.getName());
+        final HttpClient httpClient = new HttpClientBuilder(environment)
+                                      .using(config.getHttpClientConfiguration())
+                                      .build(environment.getName());
         DriversMakerConfiguration dmConfig = config.getDriversMakerConfiguration();
-        HttpClient httpClient = HttpClients.createDefault();
+//        HttpClient httpClient = HttpClients.createDefault();
         return new DriversMaker(dmConfig.getAddress(),httpClient);
     }
 

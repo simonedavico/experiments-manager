@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.utils.minio.v2;
+package cloud.benchflow.experimentsmanager.utils.minio;
 
 /**
  * @author Simone D'Avico (simonedavico@gmail.com)

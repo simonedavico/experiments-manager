@@ -22,6 +22,9 @@
         <!-- SQL dialect -->
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
+        <!-- Session context -->
+        <property name="hibernate.current_session_context_class">thread</property>
+
         <!-- Echo all executed SQL to stdout -->
         <property name="show_sql">true</property>
 

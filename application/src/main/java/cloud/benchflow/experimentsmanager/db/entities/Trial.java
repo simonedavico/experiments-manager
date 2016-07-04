@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class Trial {
 
     private enum Status {
-        QUEUED, SUBMITTED, COMPLETED, FAILED
+        QUEUED, SUBMITTED, COMPLETED, FAILED, ABORTED
     }
 
     Trial() {}
@@ -28,7 +28,7 @@ public class Trial {
     public Trial(int trialNumber) {
         this.trialNumber = trialNumber;
         this.performedOn = LocalDateTime.now();
-        this.status = Status.QUEUED;
+        this.status = Status.SUBMITTED;
     }
 
     public Trial(String userId, String benchmarkName, long experimentNumber, int trialNumber) {
@@ -133,5 +133,9 @@ public class Trial {
     public boolean isCompleted() { return status == Status.COMPLETED; }
 
     public boolean isFailed() { return status == Status.FAILED; }
+
+    public boolean isAborted() { return status == Status.ABORTED; }
+
+    public void setAborted() { this.status = Status.ABORTED; }
 
 }

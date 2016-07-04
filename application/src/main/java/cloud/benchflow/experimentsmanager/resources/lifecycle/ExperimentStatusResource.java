@@ -1,7 +1,7 @@
-package cloud.benchflow.experimentsmanager.resources.lifecycle.v2;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
-import cloud.benchflow.experimentsmanager.db.DbSession;
-import cloud.benchflow.experimentsmanager.db.DbSessionManager;
+import cloud.benchflow.experimentsmanager.db.ExperimentsDAO;
+import cloud.benchflow.experimentsmanager.db.DbManager;
 import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import cloud.benchflow.experimentsmanager.db.entities.Trial;
 import cloud.benchflow.experimentsmanager.exceptions.NoSuchExperimentIdException;
@@ -14,6 +14,8 @@ import cloud.benchflow.faban.client.responses.RunId;
 import cloud.benchflow.faban.client.responses.RunStatus;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -26,14 +28,16 @@ import javax.ws.rs.Produces;
  * Created on 06/04/16.
  */
 @Path("status")
-public class StatusBenchmarkResource {
+public class ExperimentStatusResource {
+
+   private static Logger logger = LoggerFactory.getLogger(ExperimentStatusResource.class.getName());
 
    private FabanClient faban;
-   private DbSessionManager db;
+   private DbManager db;
 
    @Inject
-   public StatusBenchmarkResource(@Named("faban") FabanClient faban,
-                                  @Named("db") DbSessionManager db) {
+   public ExperimentStatusResource(@Named("faban") FabanClient faban,
+                                   @Named("db") DbManager db) {
         this.faban = faban;
         this.db = db;
    }
@@ -48,9 +52,9 @@ public class StatusBenchmarkResource {
 
        String userId = "BenchFlow";
 
-       try(DbSession session = db.getSession()) {
+       try(ExperimentsDAO session = db.getExperimentsDAO()) {
 
-           Trial trial = session.get(userId, benchmarkName, experimentNumber, trialNumber);
+           Trial trial = session.getTrial(userId, benchmarkName, experimentNumber, trialNumber);
 
            if(trial == null)
                throw new NoSuchTrialIdException(new Trial(userId,
@@ -91,9 +95,9 @@ public class StatusBenchmarkResource {
 
        String userId = "BenchFlow";
 
-       try(DbSession session = db.getSession()) {
+       try(ExperimentsDAO session = db.getExperimentsDAO()) {
 
-           Experiment experiment = session.get(userId, benchmarkName, experimentNumber);
+           Experiment experiment = session.getExperiment(userId, benchmarkName, experimentNumber);
 
            if(experiment == null) {
                Experiment exp = new Experiment(userId, benchmarkName);
@@ -109,7 +113,7 @@ public class StatusBenchmarkResource {
                response.addTrialStatus(getTrialStatus(benchmarkName, experimentNumber, t.getTrialNumber()));
            }
 
-           if(!experiment.isCompleted() &&
+           if(!(experiment.isCompleted() || experiment.isAborted()) &&
               experiment.getTrials().stream().filter(Trial::isCompleted).count() == experiment.getTrials().size()) {
                experiment.setCompleted();
                response.setExperimentStatus(experiment.getStatus());

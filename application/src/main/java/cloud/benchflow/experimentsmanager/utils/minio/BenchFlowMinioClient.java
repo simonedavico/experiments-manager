@@ -1,10 +1,11 @@
-package cloud.benchflow.experimentsmanager.utils.minio.v2;
+package cloud.benchflow.experimentsmanager.utils.minio;
 
+import io.minio.ErrorCode;
 import io.minio.MinioClient;
+import io.minio.ObjectStat;
 import io.minio.Result;
 import io.minio.errors.*;
 import io.minio.messages.Item;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -28,25 +29,15 @@ public class BenchFlowMinioClient {
 
     private MinioClient mc;
     private static final String BENCHMARKS_BUCKET = "benchmarks";
+    private static final String DEPLOYMENT_DESCRIPTOR_NAME = "docker-compose.yml";
+    private static final String TEST_CONFIGURATION_NAME = "benchflow-benchmark.yml";
 
     public BenchFlowMinioClient(final String address, final String accessKey, final String privateKey)
-                                                throws InvalidPortException, InvalidEndpointException {
+            throws InvalidPortException, InvalidEndpointException {
 //        System.out.println("Access key: " + accessKey);
 //        System.out.println("Secret key: " + privateKey);
 //        System.out.println("Address: " + address);
         this.mc = new MinioClient(address, accessKey, privateKey);
-    }
-
-    //TODO: implement this?
-    public void saveOriginalBenchmark(final String benchmarkId, final byte[] benchmark) {
-        Exception e = new NotImplementedException("Can't save original benchmark yet");
-        throw new BenchFlowMinioClientException(e.getMessage(), e);
-    }
-
-    //TODO: implement this?
-    public void getOriginalBenchmark(final String benchmarkId) {
-        Exception e = new NotImplementedException("Can't retrieve original benchmark yet");
-        throw new BenchFlowMinioClientException(e.getMessage(), e);
     }
 
     /***
@@ -59,7 +50,7 @@ public class BenchFlowMinioClient {
         } catch (ErrorResponseException e) {
             /* happens if the object to remove doesn't exist, do nothing */
         } catch (MinioException | XmlPullParserException | NoSuchAlgorithmException |
-                 InvalidKeyException | IOException e) {
+                InvalidKeyException | IOException e) {
             throw new BenchFlowMinioClientException(e.getMessage(), e);
         }
     }
@@ -98,7 +89,7 @@ public class BenchFlowMinioClient {
             InputStream stream = new ByteArrayInputStream(bytes);
             mc.putObject(BENCHMARKS_BUCKET,id,stream,bytes.length,"application/octet-stream");
         } catch (MinioException | InvalidKeyException | NoSuchAlgorithmException |
-                 XmlPullParserException | IOException e) {
+                XmlPullParserException | IOException e) {
             throw new BenchFlowMinioClientException(e.getMessage(), e);
         }
     }
@@ -120,7 +111,7 @@ public class BenchFlowMinioClient {
      * saved at benchmarks/{benchmarkId}/original/docker-compose.yml
      */
     public String getOriginalDeploymentDescriptor(final String benchmarkId)  {
-        return getTextFile(benchmarkId + "/original/docker-compose.yml");
+        return getTextFile(benchmarkId + "/original/" + DEPLOYMENT_DESCRIPTOR_NAME);
     }
 
     /***
@@ -128,7 +119,7 @@ public class BenchFlowMinioClient {
      * saved at benchmarks/{benchmarkId}/original/benchflow-benchmark.yml
      */
     public String getOriginalBenchFlowBenchmark(final String benchmarkId) {
-        return getTextFile(benchmarkId + "/original/benchflow-benchmark.yml");
+        return getTextFile(benchmarkId + "/original/" + TEST_CONFIGURATION_NAME);
     }
 
     /***
@@ -136,7 +127,27 @@ public class BenchFlowMinioClient {
      * at benchmarks/{benchmarkId}/original/docker-compose.yml
      */
     public void saveOriginalDeploymentDescriptor(final String benchmarkId, final String deploymentDescriptor) {
-        saveTextFile(deploymentDescriptor, benchmarkId + "/original/docker-compose.yml");
+        saveTextFile(deploymentDescriptor, benchmarkId + "/original/" + DEPLOYMENT_DESCRIPTOR_NAME);
+    }
+
+    /***
+     * Saves the deployment descriptor for a given experiment
+     * at benchmarks/{benchmarkId}/{experimentNumber}/docker-compose.yml
+     */
+    public void saveDeploymentDescriptorForExperiment(final String benchmarkId,
+                                                      final long experimentNumber,
+                                                      final String deploymentDescriptor) {
+        saveTextFile(deploymentDescriptor, benchmarkId + "/" + experimentNumber + "/" +  DEPLOYMENT_DESCRIPTOR_NAME);
+    }
+
+    /***
+     * Saves the configuration for an experiment
+     * at benchmarks/{benchmarkId}/{experimentNumber}/benchflow-benchmark.yml
+     */
+    public void saveBenchFlowBenchmarkForExperiment(final String benchmarkId,
+                                                    final long experimentNumber,
+                                                    final String benchFlowBenchmark) {
+        saveTextFile(benchFlowBenchmark, benchmarkId + "/" + experimentNumber + "/" + TEST_CONFIGURATION_NAME);
     }
 
     /***
@@ -144,7 +155,15 @@ public class BenchFlowMinioClient {
      * at benchmarks/{benchmarkId}/original/benchflow-benchmark.yml
      */
     public void saveOriginalBenchFlowBenchmark(final String benchmarkId, final String benchFlowBenchmark) {
-        saveTextFile(benchFlowBenchmark, benchmarkId + "/original/benchflow-benchmark.yml");
+        saveTextFile(benchFlowBenchmark, benchmarkId + "/original/" + TEST_CONFIGURATION_NAME);
+    }
+
+    /***
+     * Returns the deployment descriptor for an experiment
+     * from benchmarks/{benchmarkId}/{experimentNumber}/docker-compose.yml
+     */
+    public String getDeploymentDescriptorForExperiment(final String benchmarkId, final long experimentNumber) {
+        return getTextFile(benchmarkId + "/" + experimentNumber + "/" + DEPLOYMENT_DESCRIPTOR_NAME);
     }
 
     /***
@@ -152,7 +171,15 @@ public class BenchFlowMinioClient {
      * from benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/docker-compose.yml
      */
     public String getDeploymentDescriptor(final String benchmarkId, final long experimentNumber, final int trialNumber) {
-        return getTextFile(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/docker-compose.yml");
+        return getTextFile(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/" + DEPLOYMENT_DESCRIPTOR_NAME);
+    }
+
+    /***
+     * Returns the benchmark configuration for an experiment,
+     * at benchmarks/{benchmarkId}/original/benchflow-benchmark.yml
+     */
+    public String getBenchFlowBenchmarkForExperiment(final String benchmarkId, final long experimentNumber) {
+        return getTextFile(benchmarkId + "/" + experimentNumber + "/" + TEST_CONFIGURATION_NAME);
     }
 
     /***
@@ -161,8 +188,25 @@ public class BenchFlowMinioClient {
      */
     public void saveDeploymentDescriptor(final String benchmarkId, final long experimentNumber,
                                          final int trialNumber, final String descriptor) {
-        String id = benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/docker-compose.yml";
+        String id = benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/" + DEPLOYMENT_DESCRIPTOR_NAME;
         saveTextFile(descriptor, id);
+    }
+
+    /***
+     * Removes the deployment descriptor for an experiment from
+     * benchmarks/{benchmarkId}/{experimentNumber}/docker-compose.yml
+     */
+    public void removeDeploymentDescriptorForExperiment(final String benchmarkId, final long experimentNumber) {
+        removeIfExists(benchmarkId + "/" + experimentNumber + "/" + DEPLOYMENT_DESCRIPTOR_NAME);
+    }
+
+    /***
+     * Removes the deployment descriptor for a trial,
+     * from benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/docker-compose.yml
+     */
+    public void removeDeploymentDescriptor(final String benchmarkId, final long experimentNumber,
+                                           final int trialNumber) {
+        removeIfExists(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/" + DEPLOYMENT_DESCRIPTOR_NAME);
     }
 
     /***
@@ -179,8 +223,17 @@ public class BenchFlowMinioClient {
      * from benchmarks/{benchmarkId}/{experimentNumber}/benchflow-benchmark.yml
      */
     public String getBenchFlowBenchmark(final String benchmarkId, final long experimentNumber) {
-        return getTextFile(benchmarkId + "/" + experimentNumber + "/benchflow-benchmark.yml");
+        return getTextFile(benchmarkId + "/" + experimentNumber + "/" + TEST_CONFIGURATION_NAME);
     }
+
+    /***
+     * Removes the configuration for an experiment,
+     * from benchmarks/{benchmarkId}/{experimentNumber}/benchflow-benchmark.yml
+     */
+    public void removeBenchFlowBenchmarkForExperiment(final String benchmarkId, final long experimentNumber) {
+        removeIfExists(benchmarkId + "/" + experimentNumber + "/" + TEST_CONFIGURATION_NAME);
+    }
+
 
     /***
      * Saves the generated Faban configuration for a trial,
@@ -198,6 +251,14 @@ public class BenchFlowMinioClient {
      */
     public String getFabanConfiguration(final String benchmarkId, final long experimentNumber, final int trialNumber) {
         return getTextFile(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/run.xml");
+    }
+
+    /***
+     * Removes the Faban configuration for a trial,
+     * from benchmarks/{benchmarkId}/{experimentNumber}/{trialNumber}/run.xml
+     */
+    public void removeFabanConfiguration(final String benchmarkId, final long experimentNumber, final int trialNumber) {
+        removeIfExists(benchmarkId + "/" + experimentNumber + "/" + trialNumber + "/run.xml");
     }
 
     /***
@@ -232,7 +293,7 @@ public class BenchFlowMinioClient {
         try {
             mc.putObject(BENCHMARKS_BUCKET, benchmarkId + "/" + experimentNUmber + "/driver.jar", driverPath);
         } catch (MinioException | NoSuchAlgorithmException | InvalidKeyException | IOException | XmlPullParserException e) {
-           throw new BenchFlowMinioClientException(e.getMessage(), e);
+            throw new BenchFlowMinioClientException(e.getMessage(), e);
         }
     }
 
@@ -249,14 +310,14 @@ public class BenchFlowMinioClient {
      * Removes benchmarks/{benchmarkId}/original/benchflow-benchmark.yml
      */
     public void removeOriginalBenchFlowBenchmark(final String benchmarkId) {
-        removeIfExists(benchmarkId + "/original/benchflow-benchmark.yml");
+        removeIfExists(benchmarkId + "/original/" + TEST_CONFIGURATION_NAME);
     }
 
     /***
      * Removes benchmarks/{benchmarkId}/original/docker-compose.yml
      */
     public void removeOriginalDeploymentDescriptor(final String benchmarkId) {
-        removeIfExists(benchmarkId + "/original/docker-compose.yml");
+        removeIfExists(benchmarkId + "/original/" + DEPLOYMENT_DESCRIPTOR_NAME);
     }
 
     /***
@@ -275,7 +336,7 @@ public class BenchFlowMinioClient {
                 mc.removeObject(BENCHMARKS_BUCKET, item.get().objectName());
             }
         } catch (MinioException | XmlPullParserException | NoSuchAlgorithmException |
-                 InvalidKeyException | IOException e) {
+                InvalidKeyException | IOException e) {
             throw new BenchFlowMinioClientException(e.getMessage(), e);
         }
     }
@@ -286,6 +347,12 @@ public class BenchFlowMinioClient {
     public List<String> listModels(final String benchmarkId) {
         List<String> modelNames = new LinkedList<>();
         try {
+            try {
+                ObjectStat stat = mc.statObject(BENCHMARKS_BUCKET, benchmarkId + "/models");
+            } catch(ErrorResponseException e) {
+                if(e.errorCode() == ErrorCode.NO_SUCH_KEY) return modelNames;
+                else throw new BenchFlowMinioClientException(e.getMessage(), e);
+            }
             for(Result<Item> item : mc.listObjects(BENCHMARKS_BUCKET, benchmarkId + "/models")) {
                 modelNames.add(item.get().objectName());
             }
@@ -305,3 +372,5 @@ public class BenchFlowMinioClient {
     }
 
 }
+
+

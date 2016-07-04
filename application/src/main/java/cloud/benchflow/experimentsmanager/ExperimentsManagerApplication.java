@@ -29,8 +29,7 @@ public class ExperimentsManagerApplication extends Application<ExperimentsManage
                 .enableAutoConfig("cloud.benchflow.experimentsmanager")
                 .modules(new BenchFlowEnvModule(),
                          new FabanModule(),
-                         new cloud.benchflow.experimentsmanager.modules.v1.MinioModule(),
-                         new cloud.benchflow.experimentsmanager.modules.v2.MinioModule(),
+                         new MinioModule(),
                          new DriversMakerModule(),
                          new DbModule(),
                          new ExecutorServiceModule())
