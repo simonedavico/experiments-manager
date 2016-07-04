@@ -2,7 +2,7 @@ package cloud.benchflow.experimentsmanager.modules;
 
 import cloud.benchflow.experimentsmanager.configurations.ExperimentsManagerConfiguration;
 import cloud.benchflow.experimentsmanager.utils.env.BenchFlowEnv;
-import cloud.benchflow.experimentsmanager.utils.minio.v2.BenchFlowMinioClient;
+import cloud.benchflow.experimentsmanager.utils.minio.BenchFlowMinioClient;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;

@@ -1,8 +1,8 @@
-package cloud.benchflow.experimentsmanager.resources.lifecycle.v2;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
 import cloud.benchflow.experimentsmanager.exceptions.BenchmarkDeployException;
 import cloud.benchflow.experimentsmanager.responses.lifecycle.DeployStatusResponse;
-import cloud.benchflow.experimentsmanager.utils.minio.v2.BenchFlowMinioClient;
+import cloud.benchflow.experimentsmanager.utils.minio.BenchFlowMinioClient;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

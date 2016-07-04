@@ -1,4 +1,4 @@
-package cloud.benchflow.experimentsmanager.resources.lifecycle.v2;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
 import cloud.benchflow.experimentsmanager.db.ExperimentsDAO;
 import cloud.benchflow.experimentsmanager.db.DbManager;

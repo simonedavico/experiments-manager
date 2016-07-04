@@ -1,14 +1,13 @@
-package cloud.benchflow.experimentsmanager.resources.lifecycle.v2;
+package cloud.benchflow.experimentsmanager.resources.lifecycle;
 
 import cloud.benchflow.experimentsmanager.db.ExperimentsDAO;
 import cloud.benchflow.experimentsmanager.db.DbManager;
 import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import cloud.benchflow.experimentsmanager.db.entities.Trial;
-import cloud.benchflow.experimentsmanager.exceptions.DriverGenerationException;
 import cloud.benchflow.experimentsmanager.exceptions.ExperimentRunException;
 import cloud.benchflow.experimentsmanager.responses.lifecycle.ExperimentIdResponse;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
-import cloud.benchflow.experimentsmanager.utils.minio.v2.BenchFlowMinioClient;
+import cloud.benchflow.experimentsmanager.utils.minio.BenchFlowMinioClient;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.responses.RunId;
@@ -58,6 +57,11 @@ public class RunExperimentResource {
         this.runBenchmarkPool = runBenchmarkPool;
         this.submitRetries = submitRetries;
         this.submitRunsPool = submitRunsPool;
+    }
+
+    private void cleanUpMinio(Experiment e) {
+        minio.removeBenchFlowBenchmarkForExperiment(e.getBenchmarkId(), e.getExperimentNumber());
+        minio.removeDeploymentDescriptorForExperiment(e.getBenchmarkId(), e.getExperimentNumber());
     }
 
 
@@ -121,7 +125,7 @@ public class RunExperimentResource {
 
                 int received = 0;
                 while (received < experiment.getTrials().size()) {
-                    //TODO: handle the case in which some trials fails to submit
+                    //TODO: handle the case in which some trials fails to submit?
                     Future<Trial> updatedTrialResponse = cs.take();
                     Trial updatedTrial = updatedTrialResponse.get();
                     updatedTrial.setSubmitted();
@@ -159,6 +163,7 @@ public class RunExperimentResource {
 
         ExperimentsDAO experimentsDAO = db.getExperimentsDAO();
         String bb = minio.getOriginalBenchFlowBenchmark(minioBenchmarkId);
+        String dd = minio.getOriginalDeploymentDescriptor(minioBenchmarkId);
 
         Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(bb);
         int trials = (Integer) parsedDD.get("trials");
@@ -177,11 +182,14 @@ public class RunExperimentResource {
         logger.debug("Saved experiment");
 
         try {
+           minio.saveBenchFlowBenchmarkForExperiment(benchmarkId, experiment.getExperimentNumber(), bb);
+           minio.saveDeploymentDescriptorForExperiment(benchmarkId, experiment.getExperimentNumber(), dd);
            runBenchmarkPool.submit(new AsyncRunExperiment(experiment, experimentsDAO));
         } catch(Exception e) {
             //leaves the database in a consistent state
             //and reports the exception so that we can investigate
             experimentsDAO.cleanUp(experiment);
+            cleanUpMinio(experiment);
             throw new WebApplicationException(e.getMessage(), e);
         }
 
