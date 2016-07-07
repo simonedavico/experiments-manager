@@ -1,11 +1,19 @@
 REPONAME = experiments-manager
 DOCKERIMAGENAME = benchflow/$(REPONAME)
+VERSION = dev
+JAVA_VERSION_FOR_COMPILATION = (^|/)java-8-oracle($|\s)
+UNAME = $(shell uname)
 
 DBNAME = mysql
 
-VERSION = dev
-JAVA_VERSION_FOR_COMPILATION = java-8-oracle 
-JAVA_HOME := `update-java-alternatives -l | cut -d' ' -f3 | grep $(JAVA_VERSION_FOR_COMPILATION)`"/jre"
+find_java:
+ifeq ($(UNAME), Darwin)
+	$(eval JAVA_HOME := $(shell /usr/libexec/java_home))
+else ifeq ($(UNAME),Linux)
+ifndef TRAVIS
+	$(eval JAVA_HOME := $(shell update-java-alternatives -l | cut -d' ' -f3 | egrep '$(JAVA_VERSION_FOR_COMPILATION)'))
+endif 
+endif
 
 .PHONY: all build_release 
 
@@ -14,20 +22,23 @@ all: build_release
 clean:
 	mvn clean
 
-build:
-	JAVA_HOME=$(JAVA_HOME) mvn -U package
+build: find_java
+	mvn -U package
 
-build_release:
-	JAVA_HOME=$(JAVA_HOME) mvn -U install
+build_release: find_java
+	mvn -U install
 
-install:
-	JAVA_HOME=$(JAVA_HOME) mvn -U install
+install: find_java
+	mvn -U install
 
-test:
-	JAVA_HOME=$(JAVA_HOME) mvn -U test
+test: find_java
+	mvn -U test
 
-build_container_local:
-	JAVA_HOME=$(JAVA_HOME) mvn -U package
+build_container:
+	docker build -t $(DOCKERIMAGENAME):$(VERSION) -f Dockerfile .
+
+build_container_local: find_java
+	mvn -U package
 	docker build -t $(DOCKERIMAGENAME):$(VERSION) -f Dockerfile.test .
 	rm target/benchflow-$(REPONAME).jar
 
