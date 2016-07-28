@@ -27,7 +27,7 @@ public class DbModule extends AbstractModule {
 //        System.out.println(dbConfig.getName());
 //        System.out.println(dbConfig.getUser());
 
-        return new DbManager(dbConfig.getAddress(), dbConfig.getName(), dbConfig.getUser());
+        return new DbManager(dbConfig.getAddress(), dbConfig.getName(), dbConfig.getUser(), dbConfig.getPassword());
     }
 
 }

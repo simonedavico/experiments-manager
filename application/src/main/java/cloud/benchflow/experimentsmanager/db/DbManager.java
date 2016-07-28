@@ -23,14 +23,14 @@ public class DbManager {
 
     private SessionFactory sessionFactory;
 
-    public DbManager(String url, String dbName, String username) {
+    public DbManager(String url, String dbName, String username, String password) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         System.out.println("jdbc:mysql://" + url + "/" + dbName + "?createDatabaseIfNotExist=true");
         builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
                 .applySetting("hibernate.connection.url", "jdbc:mysql://" + url +
                               "/" + dbName + "?createDatabaseIfNotExist=true")
                 .applySetting("hibernate.connection.username", username)
-                .applySetting("hibernate.connection.password", "");
+                .applySetting("hibernate.connection.password", password);
 
         final StandardServiceRegistry registry = builder.build();
         try {
