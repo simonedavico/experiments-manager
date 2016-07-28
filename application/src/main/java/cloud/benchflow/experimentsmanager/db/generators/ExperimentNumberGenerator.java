@@ -23,12 +23,12 @@ public class ExperimentNumberGenerator implements IdentifierGenerator {
 
         Connection c = session.connection();
         Experiment exp = (Experiment) o;
-        String benchmarkName = exp.getBenchmarkName();
+        String experimentName = exp.getExperimentName();
         String username = exp.getUsername();
         try {
             PreparedStatement ps = c.prepareStatement(
-                    "SELECT IFNULL(MAX(EXP_NUMBER)+1, 1) as nextExpId FROM EXPERIMENTS WHERE USERNAME = '" + username +
-                    "' AND BENCHMARK_NAME = '" + benchmarkName + "'");
+                    "SELECT IFNULL(MAX(EXPERIMENT_NUMBER)+1, 1) as nextExpId FROM EXPERIMENTS WHERE USERNAME = '" + username +
+                    "' AND EXPERIMENT_NAME = '" + experimentName + "'");
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()) {
@@ -38,7 +38,7 @@ public class ExperimentNumberGenerator implements IdentifierGenerator {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new HibernateException("Error while retrieving count of experiments for user " + username +
-                                         "and benchmark " + benchmarkName);
+                                         "and experiment " + experimentName);
         }
         return null;
     }

@@ -1,6 +1,6 @@
 package cloud.benchflow.experimentsmanager.utils;
 
-import cloud.benchflow.experimentsmanager.exceptions.DriverGenerationException;
+import cloud.benchflow.experimentsmanager.exceptions.BenchmarkGenerationException;
 
 import com.google.gson.Gson;
 
@@ -27,12 +27,12 @@ public class DriversMaker {
         this.http = http;
     }
     
-    public void generateDriver(String benchmarkName, long experimentNumber, int trials) {
+    public void generateBenchmark(String experimentName, long experimentNumber, int trials) {
 
         HttpPost post = new HttpPost(address + "/generatedriver");
 
         MakeDriverRequestBody body = new MakeDriverRequestBody();
-        body.setBenchmarkName(benchmarkName);
+        body.setExperimentName(experimentName);
         body.setExperimentNumber(experimentNumber);
         body.setTrials(trials);
 
@@ -42,23 +42,23 @@ public class DriversMaker {
         try {
             HttpResponse response = http.execute(post);
             if(response.getStatusLine().getStatusCode() >= 400) {
-                throw new DriverGenerationException("Error in driver generation",
+                throw new BenchmarkGenerationException("Error in benchmark generation",
                                                     response.getStatusLine().getStatusCode());
             }
         } catch (IOException e) {
-            throw new DriverGenerationException(e.getMessage(), e);
+            throw new BenchmarkGenerationException(e.getMessage(), e);
         }
 
     }
 
     private static class MakeDriverRequestBody {
-        private String benchmarkName;
+        private String experimentName;
         private long experimentNumber;
         private int trials;
         MakeDriverRequestBody() {}
 
-        public void setBenchmarkName(String benchmarkName) {
-            this.benchmarkName = benchmarkName;
+        public void setExperimentName(String experimentName) {
+            this.experimentName = experimentName;
         }
 
         public void setExperimentNumber(long experimentNumber) {

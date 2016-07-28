@@ -27,8 +27,8 @@ public class Experiment {
 
     Experiment() {}
 
-    public Experiment(String user, String benchmarkName) {
-        this.benchmarkName = benchmarkName;
+    public Experiment(String user, String experimentName) {
+        this.experimentName = experimentName;
         this.performedOn = LocalDateTime.now();
         this.username = user;
         this.status = Status.GENERATING;
@@ -38,15 +38,15 @@ public class Experiment {
     public static class ExperimentId implements Serializable {
 
         private String username;
-        private String benchmarkName;
+        private String experimentName;
         private long experimentNumber;
 
-        public String getBenchmarkName() {
-            return benchmarkName;
+        public String getExperimentName() {
+            return experimentName;
         }
 
-        public void setBenchmarkName(String benchmarkName) {
-            this.benchmarkName = benchmarkName;
+        public void setExperimentName(String experimentName) {
+            this.experimentName = experimentName;
         }
 
         public long getExperimentNumber() {
@@ -71,11 +71,11 @@ public class Experiment {
     private String username;
 
     @Id
-    @Column(name = "BENCHMARK_NAME")
-    private String benchmarkName;
+    @Column(name = "EXPERIMENT_NAME")
+    private String experimentName;
 
     @Id
-    @Column(name = "EXP_NUMBER")
+    @Column(name = "EXPERIMENT_NUMBER")
     @GenericGenerator(name = "expNumberGenerator",
                       strategy = "cloud.benchflow.experimentsmanager.db.generators.ExperimentNumberGenerator")
     @GeneratedValue(generator = "expNumberGenerator")
@@ -94,12 +94,12 @@ public class Experiment {
 //    @Formula("concat(USERNAME, '.', BENCHMARK_NAME, '.', EXP_NUMBER)")
 //    private String experimentId;
 
-    public String getBenchmarkName() {
-        return benchmarkName;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setBenchmarkName(String benchmarkName) {
-        this.benchmarkName = benchmarkName;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public long getExperimentNumber() {
@@ -140,10 +140,10 @@ public class Experiment {
     }
 
     public String getExperimentId() {
-        return username + "." + benchmarkName + "." + experimentNumber;
+        return username + "." + experimentName + "." + experimentNumber;
     }
 
-    public String getBenchmarkId() { return username + "." + benchmarkName; }
+    public String getTestId() { return username + "." + experimentName; }
 
     public String getStatus() { return status.name(); }
 

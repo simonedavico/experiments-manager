@@ -6,8 +6,10 @@ import cloud.benchflow.experimentsmanager.db.entities.Experiment;
 import cloud.benchflow.experimentsmanager.db.entities.Trial;
 import cloud.benchflow.experimentsmanager.exceptions.ExperimentRunException;
 import cloud.benchflow.experimentsmanager.responses.lifecycle.ExperimentIdResponse;
+import cloud.benchflow.experimentsmanager.utils.BenchFlowExperimentArchiveExtractor;
 import cloud.benchflow.experimentsmanager.utils.DriversMaker;
-import cloud.benchflow.experimentsmanager.utils.minio.BenchFlowMinioClient;
+import cloud.benchflow.experimentsmanager.utils.ExperimentConfiguration;
+import cloud.benchflow.minio.BenchFlowMinioClient;
 import cloud.benchflow.faban.client.FabanClient;
 import cloud.benchflow.faban.client.exceptions.FabanClientException;
 import cloud.benchflow.faban.client.responses.RunId;
@@ -15,11 +17,14 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.ws.rs.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -48,20 +53,19 @@ public class RunExperimentResource {
                                  @Named("faban") FabanClient faban,
                                  @Named("retries") Integer submitRetries,
                                  @Named("drivers-maker") DriversMaker driversMaker,
-                                 @Named("runBenchmarkExecutorService") ExecutorService runBenchmarkPool,
+                                 @Named("runBenchmarkExecutorService") ExecutorService runExperimentsPool,
                                  @Named("submitRunExecutorService") ExecutorService submitRunsPool) {
         this.minio = minio;
         this.db = db;
         this.faban = faban;
         this.driversMaker = driversMaker;
-        this.runBenchmarkPool = runBenchmarkPool;
+        this.runBenchmarkPool = runExperimentsPool;
         this.submitRetries = submitRetries;
         this.submitRunsPool = submitRunsPool;
     }
 
     private void cleanUpMinio(Experiment e) {
-        minio.removeBenchFlowBenchmarkForExperiment(e.getBenchmarkId(), e.getExperimentNumber());
-        minio.removeDeploymentDescriptorForExperiment(e.getBenchmarkId(), e.getExperimentNumber());
+        minio.removeTestConfigurationForExperiment(e.getTestId(), e.getExperimentNumber());
     }
 
 
@@ -80,19 +84,19 @@ public class RunExperimentResource {
         public void run() {
 
             try {
-                String benchmarkName = experiment.getBenchmarkName();
-                String benchmarkId = experiment.getBenchmarkId();
-                String minioBenchmarkId = experiment.getUsername() + "/" + benchmarkName;
+                String testName = experiment.getExperimentName();
+                String testId = experiment.getTestId();
+                String minioTestId = experiment.getUsername() + "/" + testName;
                 long experimentNumber = experiment.getExperimentNumber();
 
-                driversMaker.generateDriver(benchmarkName, experiment.getExperimentNumber(), experiment.getTrials().size());
-                logger.debug("Generated Faban driver");
+                driversMaker.generateBenchmark(testName, experiment.getExperimentNumber(), experiment.getTrials().size());
+                logger.debug("Generated Faban benchmark");
 
                 experiment.setQueued();
 
-                InputStream driver = minio.getGeneratedDriver(minioBenchmarkId, experimentNumber);
-                faban.deploy(driver, experiment.getExperimentId());
-                logger.debug("Driver successfully deployed");
+                InputStream fabanBenchmark = minio.getGeneratedBenchmark(minioTestId, experimentNumber);
+                faban.deploy(fabanBenchmark, experiment.getExperimentId());
+                logger.debug("Benchmark successfully deployed");
 
                 //send the runs to faban
                 CompletionService<Trial> cs = new ExecutorCompletionService<>(submitRunsPool);
@@ -102,7 +106,7 @@ public class RunExperimentResource {
 
                     cs.submit(() -> {
                         int retries = submitRetries;
-                        String config = minio.getFabanConfiguration(benchmarkId, experimentNumber, t.getTrialNumber());
+                        String config = minio.getFabanConfiguration(testId, experimentNumber, t.getTrialNumber());
 
                         RunId runId = null;
                         while (runId == null) {
@@ -149,29 +153,37 @@ public class RunExperimentResource {
         }
     }
 
-    //TODO: in the future the run api will receive both descriptors directly
-    //TODO: it will first generate a uuid for the experiment
-    //TODO: and then save the files on minio
+
+    //TODO: in the future, instead of the archive, this API
+    //will receive only configuration and deployment descriptor for experiment
+    //for now it receives the full archive and saves stuff on minio (to be moved to orchestrator)
     @POST
-    @Path("{benchmarkName}")
+    @Path("{testName}")
     @Produces("application/vnd.experiments-manager.v2+json")
-    public ExperimentIdResponse runAsync(@PathParam("benchmarkName") String benchmarkName) {
+    public ExperimentIdResponse runAsync(@PathParam("testName") String testName,
+                                         @FormDataParam("benchflow-experiment") InputStream expArchive,
+                                         @FormDataParam("benchflow-experiment") FormDataContentDisposition expArchiveDisp)
+    throws IOException {
 
         String user = "BenchFlow";
-        String minioBenchmarkId = user + "/" + benchmarkName;
-        Experiment experiment;
+        String minioTestId = (user + "." + testName).replace('.', '/');
 
         ExperimentsDAO experimentsDAO = db.getExperimentsDAO();
-        String bb = minio.getOriginalBenchFlowBenchmark(minioBenchmarkId);
-        String dd = minio.getOriginalDeploymentDescriptor(minioBenchmarkId);
 
-        Map<String, Object> parsedDD = (Map<String, Object>) new Yaml().load(bb);
-        int trials = (Integer) parsedDD.get("trials");
 
-        experiment = new Experiment(user, benchmarkName);
-        String benchmarkId = experiment.getBenchmarkId();
+        ExperimentConfiguration config = new BenchFlowExperimentArchiveExtractor(minio, minioTestId)
+                .extract(expArchive);
 
-        logger.debug("Retrieved number of trials for benchmark " + benchmarkId + ": " + trials);
+        String expConfig = config.getExpConfig();
+        String deploymentDescriptor = config.getDeploymentDescriptor();
+
+        Map<String, Object> parsedExpConfig = (Map<String, Object>) new Yaml().load(expConfig);
+        int trials = (Integer) parsedExpConfig.get("trials");
+
+        Experiment experiment = new Experiment(user, testName);
+        String testId = experiment.getTestId();
+
+        logger.debug("Retrieved number of trials for experiment " + testId + ": " + trials);
 
         for (int i = 1; i <= trials; i++) {
             Trial trial = new Trial(i);
@@ -179,11 +191,11 @@ public class RunExperimentResource {
         }
 
         experimentsDAO.saveExperiment(experiment);
-        logger.debug("Saved experiment");
+        logger.debug("Stored experiment id in database");
 
         try {
-           minio.saveBenchFlowBenchmarkForExperiment(benchmarkId, experiment.getExperimentNumber(), bb);
-           minio.saveDeploymentDescriptorForExperiment(benchmarkId, experiment.getExperimentNumber(), dd);
+           minio.saveTestConfigurationForExperiment(minioTestId, experiment.getExperimentNumber(), expConfig);
+           minio.saveDeploymentDescriptorForExperiment(minioTestId, experiment.getExperimentNumber(), deploymentDescriptor);
            runBenchmarkPool.submit(new AsyncRunExperiment(experiment, experimentsDAO));
         } catch(Exception e) {
             //leaves the database in a consistent state
