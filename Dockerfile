@@ -9,6 +9,9 @@ RUN wget -q --no-check-certificate -O /app/benchflow-experiments-manager.jar htt
 
 COPY configuration.yml /app/
 
+# copy resources (db configurations)
+COPY ./application/src/main/resources/ /app/application/src/main/resources
+
 COPY ./services/envcp/config.tpl /app/config.tpl
 
 COPY ./services/300-experiments-manager.conf /apps/chaperone.d/300-experiments-manager.conf
