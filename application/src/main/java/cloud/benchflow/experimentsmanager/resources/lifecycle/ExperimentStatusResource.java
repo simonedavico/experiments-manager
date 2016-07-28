@@ -55,7 +55,6 @@ public class ExperimentStatusResource {
        try(ExperimentsDAO session = db.getExperimentsDAO()) {
 
            Trial trial = session.getTrial(userId, testName, experimentNumber, trialNumber);
-
            if(trial == null)
                throw new NoSuchTrialIdException(new Trial(userId,
                                                           testName,

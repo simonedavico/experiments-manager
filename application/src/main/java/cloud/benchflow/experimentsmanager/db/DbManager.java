@@ -26,7 +26,10 @@ public class DbManager {
     public DbManager(String url, String dbName, String username) {
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         System.out.println("jdbc:mysql://" + url + "/" + dbName + "?createDatabaseIfNotExist=true");
-        builder.configure(new File("./application/src/main/resources/hibernate.cfg.xml"))
+        builder.configure(
+                //Paths.get("./application/src/main/resources/hibernate.cfg.xml").toFile()
+                new File("./application/src/main/resources/hibernate.cfg.xml")
+        )
                 .applySetting("hibernate.connection.url", "jdbc:mysql://" + url +
                               "/" + dbName + "?createDatabaseIfNotExist=true")
                 .applySetting("hibernate.connection.username", username)

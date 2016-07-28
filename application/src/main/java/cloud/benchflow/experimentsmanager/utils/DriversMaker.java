@@ -27,6 +27,7 @@ public class DriversMaker {
         this.http = http;
     }
     
+
     public void generateBenchmark(String experimentName, long experimentNumber, int trials) {
 
         HttpPost post = new HttpPost(address + "/generatedriver");
@@ -43,6 +44,7 @@ public class DriversMaker {
             HttpResponse response = http.execute(post);
             if(response.getStatusLine().getStatusCode() >= 400) {
                 throw new BenchmarkGenerationException("Error in benchmark generation",
+
                                                     response.getStatusLine().getStatusCode());
             }
         } catch (IOException e) {
