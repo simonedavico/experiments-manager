@@ -44,9 +44,9 @@ public class ExperimentStatusResource {
 
 
    @GET
-   @Path("{benchmarkName}/{experimentNumber}/{trialNumber}")
+   @Path("{testName}/{experimentNumber}/{trialNumber}")
    @Produces("application/vnd.experiments-manager.v2+json")
-   public TrialStatusResponse getTrialStatus(@PathParam("benchmarkName") String benchmarkName,
+   public TrialStatusResponse getTrialStatus(@PathParam("testName") String testName,
                                              @PathParam("experimentNumber") long experimentNumber,
                                              @PathParam("trialNumber") int trialNumber) {
 
@@ -54,11 +54,11 @@ public class ExperimentStatusResource {
 
        try(ExperimentsDAO session = db.getExperimentsDAO()) {
 
-           Trial trial = session.getTrial(userId, benchmarkName, experimentNumber, trialNumber);
+           Trial trial = session.getTrial(userId, testName, experimentNumber, trialNumber);
 
            if(trial == null)
                throw new NoSuchTrialIdException(new Trial(userId,
-                                                          benchmarkName,
+                                                          testName,
                                                           experimentNumber,
                                                           trialNumber).getTrialId());
            if(trial.isSubmitted()) {
@@ -88,19 +88,19 @@ public class ExperimentStatusResource {
    }
 
    @GET
-   @Path("{benchmarkName}/{experimentNumber}")
+   @Path("{testName}/{experimentNumber}")
    @Produces("application/vnd.experiments-manager.v2+json")
-   public ExperimentStatusResponse getExperimentStatus(@PathParam("benchmarkName") String benchmarkName,
+   public ExperimentStatusResponse getExperimentStatus(@PathParam("testName") String testName,
                                                        @PathParam("experimentNumber") long experimentNumber) {
 
        String userId = "BenchFlow";
 
        try(ExperimentsDAO session = db.getExperimentsDAO()) {
 
-           Experiment experiment = session.getExperiment(userId, benchmarkName, experimentNumber);
+           Experiment experiment = session.getExperiment(userId, testName, experimentNumber);
 
            if(experiment == null) {
-               Experiment exp = new Experiment(userId, benchmarkName);
+               Experiment exp = new Experiment(userId, testName);
                exp.setExperimentNumber(experimentNumber);
                throw new NoSuchExperimentIdException(exp.getExperimentId());
            }
@@ -110,7 +110,7 @@ public class ExperimentStatusResource {
                                                 experiment.getStatus());
 
            for(Trial t : experiment.getTrials()) {
-               response.addTrialStatus(getTrialStatus(benchmarkName, experimentNumber, t.getTrialNumber()));
+               response.addTrialStatus(getTrialStatus(testName, experimentNumber, t.getTrialNumber()));
            }
 
            if(!(experiment.isCompleted() || experiment.isAborted()) &&

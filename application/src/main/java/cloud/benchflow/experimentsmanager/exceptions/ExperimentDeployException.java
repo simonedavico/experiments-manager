@@ -8,21 +8,21 @@ import javax.ws.rs.core.Response;
  *
  * Created on 03/12/15.
  */
-public class BenchmarkDeployException extends WebApplicationException {
+public class ExperimentDeployException extends WebApplicationException {
 
-    public BenchmarkDeployException(String message, Response.Status status) {
+    public ExperimentDeployException(String message, Response.Status status) {
         super(message, status);
     }
 
-    public BenchmarkDeployException(String message) {
+    public ExperimentDeployException(String message) {
         this(message, Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    public BenchmarkDeployException() {
+    public ExperimentDeployException() {
         super(Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    public BenchmarkDeployException(String message, Throwable cause) {
+    public ExperimentDeployException(String message, Throwable cause) {
         super(message, cause, Response.Status.INTERNAL_SERVER_ERROR);
     }
 

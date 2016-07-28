@@ -8,17 +8,17 @@ import javax.ws.rs.core.Response;
  *
  * Created on 05/03/16.
  */
-public class DriverGenerationException extends WebApplicationException {
+public class BenchmarkGenerationException extends WebApplicationException {
 
-    public DriverGenerationException(String message) {
+    public BenchmarkGenerationException(String message) {
         super(message, Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    public DriverGenerationException(String message, int status) {
+    public BenchmarkGenerationException(String message, int status) {
         super(message, status);
     }
 
-    public DriverGenerationException(String message, Throwable cause) {
+    public BenchmarkGenerationException(String message, Throwable cause) {
         super(message, cause, Response.Status.INTERNAL_SERVER_ERROR);
     }
 
