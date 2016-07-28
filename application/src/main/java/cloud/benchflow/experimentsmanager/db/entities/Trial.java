@@ -31,8 +31,8 @@ public class Trial {
         this.status = Status.SUBMITTED;
     }
 
-    public Trial(String userId, String benchmarkName, long experimentNumber, int trialNumber) {
-        this.experiment = new Experiment(userId, benchmarkName);
+    public Trial(String userId, String experimentName, long experimentNumber, int trialNumber) {
+        this.experiment = new Experiment(userId, experimentName);
         this.experiment.setExperimentNumber(experimentNumber);
         this.trialNumber = trialNumber;
     }
@@ -67,8 +67,8 @@ public class Trial {
     @Id
     @JoinColumns({
             @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME"),
-            @JoinColumn(name = "BENCHMARK_NAME", referencedColumnName = "BENCHMARK_NAME"),
-            @JoinColumn(name = "EXP_NUMBER", referencedColumnName = "EXP_NUMBER")
+            @JoinColumn(name = "EXPERIMENT_NAME", referencedColumnName = "EXPERIMENT_NAME"),
+            @JoinColumn(name = "EXPERIMENT_NUMBER", referencedColumnName = "EXPERIMENT_NUMBER")
     })
     @ManyToOne
     private Experiment experiment;
