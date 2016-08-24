@@ -16,6 +16,7 @@ import cloud.benchflow.faban.client.responses.RunId;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -24,8 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -86,7 +90,8 @@ public class RunExperimentResource {
             try {
                 String testName = experiment.getExperimentName();
                 String testId = experiment.getTestId();
-                String minioTestId = experiment.getUsername() + "/" + testName;
+                //String minioTestId = experiment.getUsername() + "/" + testName;
+                String minioTestId = (experiment.getUsername() + "." + testName).replace('.', '/');
                 long experimentNumber = experiment.getExperimentNumber();
 
                 driversMaker.generateBenchmark(testName, experiment.getExperimentNumber(), experiment.getTrials().size());
@@ -95,8 +100,23 @@ public class RunExperimentResource {
                 experiment.setQueued();
 
                 InputStream fabanBenchmark = minio.getGeneratedBenchmark(minioTestId, experimentNumber);
-                faban.deploy(fabanBenchmark, experiment.getExperimentId());
+
+                //because Faban doesn't accept deployment of benchmarks with dots in the name
+                String compatibleBenchmarkName = experiment.getExperimentId().replace('.', '-');
+
+                java.nio.file.Path benchmarkPath =
+                        Paths.get("./tmp").resolve(experiment.getExperimentId())
+                                          .resolve("benchflow-benchmark.jar");
+                                          //.resolve(compatibleBenchmarkName + ".jar");
+
+                FileUtils.copyInputStreamToFile(fabanBenchmark, benchmarkPath.toFile());
+
+                //faban.deploy(fabanBenchmark, experiment.getExperimentId());
+                System.out.println(faban.deploy(benchmarkPath.toFile()).getCode());
+
                 logger.debug("Benchmark successfully deployed");
+
+                FileUtils.forceDelete(benchmarkPath.toFile());
 
                 //send the runs to faban
                 CompletionService<Trial> cs = new ExecutorCompletionService<>(submitRunsPool);
@@ -106,14 +126,21 @@ public class RunExperimentResource {
 
                     cs.submit(() -> {
                         int retries = submitRetries;
-                        String config = minio.getFabanConfiguration(testId, experimentNumber, t.getTrialNumber());
+                        String config = minio.getFabanConfiguration(minioTestId, experimentNumber, t.getTrialNumber());
+                        java.nio.file.Path fabanConfigPath = Paths.get("./tmp")
+                                .resolve(experiment.getExperimentId())
+                                .resolve(String.valueOf(t.getTrialNumber()))
+                                .resolve("run.xml");
+                        FileUtils.writeStringToFile(fabanConfigPath.toFile(), config, Charset.forName("UTF-8"));
 
                         RunId runId = null;
                         while (runId == null) {
                             try {
 //                                runId = new RunId(benchmarkName,"foo");
-                                runId = faban.submit(experiment.getExperimentId(), t.getTrialId(),
-                                        IOUtils.toInputStream(config, Charsets.UTF_8));
+//                                runId = faban.submit(compatibleBenchmarkName, t.getTrialId().replace('.', '-'),
+//                                                      fabanConfigPath.toFile());
+                                runId = faban.submit("benchflow-benchmark", "benchflow-benchmark",
+                                        fabanConfigPath.toFile());
                             } catch (FabanClientException e) {
                                 if (retries > 0) retries--;
                                 else {
@@ -146,6 +173,7 @@ public class RunExperimentResource {
                 //TODO: set all trials as aborted, if any
                 //check if any of them was queued on faban, to kill it
                 experimentsDAO.update(experiment);
+                logger.debug("Exception", e.getMessage());
                 throw new ExperimentRunException(e.getMessage(), e);
             } finally {
                 experimentsDAO.close();
@@ -159,10 +187,11 @@ public class RunExperimentResource {
     //for now it receives the full archive and saves stuff on minio (to be moved to orchestrator)
     @POST
     @Path("{testName}")
-    @Produces("application/vnd.experiments-manager.v2+json")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
     public ExperimentIdResponse runAsync(@PathParam("testName") String testName,
-                                         @FormDataParam("benchflow-experiment") InputStream expArchive,
-                                         @FormDataParam("benchflow-experiment") FormDataContentDisposition expArchiveDisp)
+                                         @FormDataParam("experiment") InputStream expArchive,
+                                         @FormDataParam("experiment") FormDataContentDisposition expArchiveDisp)
     throws IOException {
 
         String user = "BenchFlow";
