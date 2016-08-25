@@ -86,8 +86,10 @@ public class BenchFlowExperimentArchiveExtractor {
 
         public static Predicate<ZipEntry> isExpConfig = e -> isExpConfigEntry.test(e, "benchflow-test.yml");
         public static Predicate<ZipEntry> isDeploymentDescriptor = e -> isExpConfigEntry.test(e, "docker-compose.yml");
+//        public static Predicate<ZipEntry> isModel = e -> e.getName().contains("models") &&
+//                !(getEntryFileName.apply(e).endsWith("models/"));
         public static Predicate<ZipEntry> isModel = e -> e.getName().contains("models") &&
-                !(getEntryFileName.apply(e).endsWith("models/"));
+                !(e.getName().endsWith("models/"));
 
     }
 

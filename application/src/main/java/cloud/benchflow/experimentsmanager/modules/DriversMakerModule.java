@@ -28,6 +28,9 @@ public class DriversMakerModule extends AbstractModule {
     public DriversMaker provideDriversMaker(/*@Named("http") HttpClient httpClient,*/
                                             ExperimentsManagerConfiguration config,
                                             Environment environment) {
+
+        System.out.println(config.getHttpClientConfiguration().getTimeout());
+
         final HttpClient httpClient = new HttpClientBuilder(environment)
                                       .using(config.getHttpClientConfiguration())
                                       .build(environment.getName());

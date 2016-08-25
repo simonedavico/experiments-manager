@@ -38,6 +38,12 @@ public class ExperimentsManagerConfiguration extends Configuration {
     @JsonProperty
     private HttpClientConfiguration httpClient = new HttpClientConfiguration();
 
+    @JsonProperty("http")
+    public void setHttpClientConfiguration(HttpClientConfiguration httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    @JsonProperty("http")
     public HttpClientConfiguration getHttpClientConfiguration() {
         return httpClient;
     }
