@@ -31,7 +31,7 @@ server:
       port: 8081
       #bindHost: 127.0.0.1 # only bind to loopback
 
-httpClient:
+http:
   timeout: 20000ms
   connectionTimeout: 5000ms
   timeToLive: 1h
@@ -45,8 +45,8 @@ logging:
   level: INFO
   loggers:
     io.dropwizard: INFO
-    cloud.benchflow.experimentsmanager.resources.lifecycle.v2.RunBenchmarkResource: ALL
-    cloud.benchflow.experimentsmanager.resources.lifecycle.v2.DeployBenchmarkResource: ALL
+    cloud.benchflow.experimentsmanager.resources.lifecycle.RunBenchmarkResource: ALL
+    cloud.benchflow.experimentsmanager.resources.lifecycle.DeployBenchmarkResource: ALL
   appenders:
     - type: console
       threshold: ALL
