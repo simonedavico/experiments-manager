@@ -31,6 +31,16 @@ server:
       port: 8081
       #bindHost: 127.0.0.1 # only bind to loopback
 
+httpClient:
+  timeout: 20000ms
+  connectionTimeout: 5000ms
+  timeToLive: 1h
+  cookiesEnabled: false
+  maxConnections: 1024
+  maxConnectionsPerRoute: 1024
+  keepAlive: 0ms
+  retries: 3
+
 logging:
   level: INFO
   loggers:
