@@ -102,7 +102,7 @@ public class RunExperimentResource {
                 InputStream fabanBenchmark = minio.getGeneratedBenchmark(minioTestId, experimentNumber);
 
                 //because Faban doesn't accept deployment of benchmarks with dots in the name
-                String compatibleBenchmarkName = experiment.getExperimentId().replace('.', '-');
+                String compatibleBenchmarkName = experiment.getExperimentId().replace('.', '_');
 
                 java.nio.file.Path benchmarkPath =
                         Paths.get("./tmp").resolve(experiment.getExperimentId())
